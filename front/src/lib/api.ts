@@ -38,6 +38,7 @@ export type ChatDetailResponse = {
 import {
   getCachedChat,
   getCachedChatList,
+  invalidateChatCache,
   invalidateChatListCache,
   setCachedChat,
   setCachedChatList,
@@ -165,6 +166,23 @@ export async function getChat(
   const chat = (await response.json()) as ChatDetailResponse
   setCachedChat(chat)
   return chat
+}
+
+export async function deleteChat(id: string): Promise<void> {
+  const response = await fetch(
+    `${API_BASE}/api/chats/${encodeURIComponent(id)}`,
+    { method: 'DELETE', cache: 'no-store' },
+  )
+  if (response.status === 204) {
+    invalidateChatCache(id)
+    notifyChatsUpdated()
+    return
+  }
+  if (response.status === 404) {
+    throw new Error('Chat not found')
+  }
+  const detail = await parseJsonError(response)
+  throw new Error(detail ?? `Failed to delete chat (${response.status})`)
 }
 
 export async function createChat(title: string): Promise<ChatDetailResponse> {

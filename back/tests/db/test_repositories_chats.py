@@ -5,6 +5,7 @@ from db.repositories.chats import (
     db_append_assistant_with_sources,
     db_append_message,
     db_create_chat,
+    db_delete_chat,
     db_get_chat_for_user,
     db_list_chats_for_user,
     db_update_chat_title,
@@ -32,6 +33,9 @@ def test_chat_repository_lifecycle(db_session: Session) -> None:
 
     updated = db_update_chat_title(db_session, loaded, "Renamed")
     assert updated.title == "Renamed"
+
+    db_delete_chat(db_session, updated)
+    assert db_list_chats_for_user(db_session, DEV_USER_ID) == []
 
 
 def test_db_append_assistant_persists_source_metadata(db_session: Session) -> None:

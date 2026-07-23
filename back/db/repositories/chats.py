@@ -63,6 +63,11 @@ def db_update_chat_title(db: Session, chat: Chat, title: str) -> Chat:
     return chat
 
 
+def db_delete_chat(db: Session, chat: Chat) -> None:
+    db.delete(chat)
+    db.commit()
+
+
 def db_append_message(
     db: Session,
     chat: Chat,
