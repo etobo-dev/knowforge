@@ -1,13 +1,15 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useCallback, useEffect, useState } from 'react'
-import { Plus, Settings, MessageSquare, FolderOpen, Upload } from 'lucide-react'
+import { Plus, Settings, MessageSquare, FolderOpen, Upload, Trash2 } from 'lucide-react'
 
 import { ThemeToggle } from '@/components/ThemeToggle'
+import { ConfirmModal } from '@/components/ui/Modal'
 import {
   CHATS_UPDATED_EVENT,
+  deleteChat,
   getCachedChatList,
   listChats,
   type ChatSummaryResponse,
@@ -28,9 +30,14 @@ function isChatActive(pathname: string, chatId: string) {
 
 export default function Sidebar() {
   const pathname = usePathname()
+  const router = useRouter()
   const [chats, setChats] = useState<ChatSummaryResponse[]>([])
   const [isLoadingChats, setIsLoadingChats] = useState(true)
   const [chatsError, setChatsError] = useState(false)
+  const [pendingDeleteChat, setPendingDeleteChat] =
+    useState<ChatSummaryResponse | null>(null)
+  const [isDeletingChat, setIsDeletingChat] = useState(false)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
 
   const loadChats = useCallback(async (force = false) => {
     setChatsError(false)
@@ -64,8 +71,59 @@ export default function Sidebar() {
     return () => window.removeEventListener(CHATS_UPDATED_EVENT, onChatsUpdated)
   }, [loadChats])
 
+  const handleCloseDeleteConfirm = useCallback(() => {
+    if (isDeletingChat) return
+    setPendingDeleteChat(null)
+    setDeleteError(null)
+  }, [isDeletingChat])
+
+  const handleConfirmDeleteChat = useCallback(async () => {
+    if (!pendingDeleteChat) return
+
+    const chatId = pendingDeleteChat.id
+    const wasActive = isChatActive(pathname, chatId)
+    setIsDeletingChat(true)
+    setDeleteError(null)
+
+    try {
+      await deleteChat(chatId)
+      setPendingDeleteChat(null)
+      if (wasActive) {
+        router.push('/chat/new')
+      }
+    } catch {
+      setDeleteError('Could not delete the chat. Try again.')
+    } finally {
+      setIsDeletingChat(false)
+    }
+  }, [pendingDeleteChat, pathname, router])
+
   return (
     <aside className="w-56 bg-sidebar-bg text-sidebar-text flex flex-col h-screen shrink-0">
+      <ConfirmModal
+        open={pendingDeleteChat !== null}
+        onClose={handleCloseDeleteConfirm}
+        onConfirm={handleConfirmDeleteChat}
+        title="Delete chat?"
+        description={
+          <>
+            <p>
+              This will permanently delete{' '}
+              <span className="font-medium text-text-primary">
+                {pendingDeleteChat?.title ?? 'this chat'}
+              </span>{' '}
+              and all of its messages. This cannot be undone.
+            </p>
+            {deleteError ? (
+              <p className="mt-3 text-error">{deleteError}</p>
+            ) : null}
+          </>
+        }
+        confirmLabel="Delete"
+        confirmVariant="danger"
+        isLoading={isDeletingChat}
+      />
+
       <div className="p-5 pb-4">
         <h1 className="text-xl font-bold text-white tracking-tight">Knowforge</h1>
       </div>
@@ -96,19 +154,41 @@ export default function Sidebar() {
               const href = chatHref(chat.id)
               const active = isChatActive(pathname, chat.id)
               return (
-                <Link
+                <div
                   key={chat.id}
-                  href={href}
-                  title={chat.title}
-                  className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors min-w-0 ${
+                  className={`group flex items-center gap-1 rounded-lg pr-1 transition-colors min-w-0 ${
                     active
                       ? 'bg-sidebar-active text-white'
                       : 'hover:bg-sidebar-active/50 text-sidebar-text'
                   }`}
                 >
-                  <MessageSquare size={14} className="opacity-60 shrink-0" />
-                  <span className="truncate">{chat.title}</span>
-                </Link>
+                  <Link
+                    href={href}
+                    title={chat.title}
+                    className="flex min-w-0 flex-1 items-center gap-2.5 px-3 py-2 text-sm"
+                  >
+                    <MessageSquare size={14} className="opacity-60 shrink-0" />
+                    <span className="truncate">{chat.title}</span>
+                  </Link>
+                  <button
+                    type="button"
+                    aria-label={`Delete chat ${chat.title}`}
+                    title="Delete chat"
+                    onClick={(event) => {
+                      event.preventDefault()
+                      event.stopPropagation()
+                      setDeleteError(null)
+                      setPendingDeleteChat(chat)
+                    }}
+                    className={`shrink-0 rounded-md p-1.5 transition-opacity hover:bg-white/10 ${
+                      active
+                        ? 'opacity-70 hover:opacity-100'
+                        : 'opacity-0 group-hover:opacity-70 group-focus-within:opacity-70 hover:opacity-100'
+                    }`}
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
               )
             })
           )}

@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 from sqlalchemy.orm import Session
 
 from api.schemas.chats import (
@@ -15,6 +15,7 @@ from api.schemas.chats import (
 from db.models import Chat
 from db.repositories.chats import (
     db_create_chat,
+    db_delete_chat,
     db_get_chat_for_user,
     db_list_chats_for_user,
     db_update_chat_title,
@@ -76,6 +77,13 @@ def update_chat(
     chat = db_get_chat_for_user(db, DEV_USER_ID, chat_id)
     chat = db_update_chat_title(db, chat, body.title.strip())
     return _chat_detail(chat)
+
+
+@router.delete("/{chat_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_chat(chat_id: UUID, db: Session = Depends(get_db)) -> Response:
+    chat = db_get_chat_for_user(db, DEV_USER_ID, chat_id)
+    db_delete_chat(db, chat)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @router.post("/{chat_id}/messages", response_model=ChatDetailResponse)

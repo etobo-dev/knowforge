@@ -74,6 +74,7 @@ def test_unknown_chat_returns_404(client: TestClient) -> None:
     assert (
         client.patch(f"/api/chats/{unknown_id}", json={"title": "x"}).status_code == 404
     )
+    assert client.delete(f"/api/chats/{unknown_id}").status_code == 404
     assert (
         client.post(
             f"/api/chats/{unknown_id}/messages",
@@ -91,6 +92,30 @@ def test_unknown_chat_returns_404(client: TestClient) -> None:
         ).status_code
         == 404
     )
+
+
+def test_delete_chat_removes_chat_and_messages(
+    client: TestClient,
+    db_session: Session,
+) -> None:
+    chat, _messages = seed_chat_with_turns(
+        db_session,
+        [
+            ("What is the refund policy?", "Refunds within 30 days."),
+            ("And exchanges?", "Exchanges within 60 days."),
+        ],
+    )
+    other = client.post("/api/chats", json={"title": "Keep me"}).json()
+
+    deleted = client.delete(f"/api/chats/{chat.id}")
+    assert deleted.status_code == 204
+
+    assert client.get(f"/api/chats/{chat.id}").status_code == 404
+    listed = client.get("/api/chats")
+    assert listed.status_code == 200
+    listed_ids = {item["id"] for item in listed.json()}
+    assert str(chat.id) not in listed_ids
+    assert other["id"] in listed_ids
 
 
 def test_delete_message_truncates_subsequent_messages(
