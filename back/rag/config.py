@@ -15,8 +15,6 @@ def _get_env(key: str) -> str:
 class Config:
     S3_BUCKET = "knowforge-documents-bucket"
     S3_REGION = "us-east-1"
-    AWS_ACCESS_KEY_ID = _get_env("AWS_ACCESS_KEY_ID")
-    AWS_SECRET_ACCESS_KEY = _get_env("AWS_SECRET_ACCESS_KEY")
 
     OPENAI_API_KEY = _get_env("OPENAI_API_KEY")
     EMBEDDING_MODEL = "text-embedding-3-small"

@@ -116,7 +116,10 @@ def test_handle_existing_document_reuploads_when_still_uploading(
     assert document.status == DocumentStatus.INDEXED
 
 
-def test_handle_existing_document_rolls_back_when_s3_fails(db_session: Session) -> None:
+def test_handle_existing_document_rolls_back_when_s3_fails(
+    db_session: Session,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     content = plain_text_bytes("S3 failure on retry.")
     existing = build_document(
         user_id=DEV_USER_ID,
@@ -128,15 +131,34 @@ def test_handle_existing_document_rolls_back_when_s3_fails(db_session: Session) 
     db_persist_new_document(db_session, existing)
     db_session.commit()
 
-    with pytest.raises(Exception):
+    def _fail_upload(*_args: object, **_kwargs: object) -> None:
+        raise RuntimeError("s3 unavailable")
+
+    monkeypatch.setattr(
+        "db.services.document_upload.upload_document_to_s3",
+        _fail_upload,
+    )
+
+    with pytest.raises(RuntimeError, match="s3 unavailable"):
         handle_existing_document(db_session, existing, content)
 
 
-def test_handle_new_document_rolls_back_when_s3_fails(db_session: Session) -> None:
+def test_handle_new_document_rolls_back_when_s3_fails(
+    db_session: Session,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     content = plain_text_bytes("S3 failure content.")
     file = _upload_file("fail.txt", content, "text/plain")
 
-    with pytest.raises(Exception):
+    def _fail_upload(*_args: object, **_kwargs: object) -> None:
+        raise RuntimeError("s3 unavailable")
+
+    monkeypatch.setattr(
+        "db.services.document_upload.upload_document_to_s3",
+        _fail_upload,
+    )
+
+    with pytest.raises(RuntimeError, match="s3 unavailable"):
         handle_new_document(
             db=db_session,
             file=file,
