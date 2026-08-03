@@ -12,9 +12,14 @@ def _get_env(key: str) -> str:
     return value
 
 
+def _get_env_or(key: str, default: str) -> str:
+    value = os.getenv(key)
+    return value if value else default
+
+
 class Config:
-    S3_BUCKET = "knowforge-documents-bucket"
-    S3_REGION = "us-east-1"
+    S3_BUCKET = _get_env_or("S3_BUCKET", "knowforge-documents-bucket")
+    S3_REGION = _get_env_or("S3_REGION", "us-east-1")
 
     OPENAI_API_KEY = _get_env("OPENAI_API_KEY")
     EMBEDDING_MODEL = "text-embedding-3-small"

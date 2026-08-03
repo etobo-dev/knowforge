@@ -1,6 +1,6 @@
 import pytest
 
-from rag.config import Config, _get_env
+from rag.config import Config, _get_env, _get_env_or
 
 
 def test_get_env_returns_value(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -14,8 +14,16 @@ def test_get_env_raises_when_missing(monkeypatch: pytest.MonkeyPatch) -> None:
         _get_env("TEST_ENV_KEY")
 
 
+def test_get_env_or_returns_default_when_missing(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.delenv("TEST_OPTIONAL_ENV_KEY", raising=False)
+    assert _get_env_or("TEST_OPTIONAL_ENV_KEY", "fallback") == "fallback"
+
+
 def test_config_exposes_expected_defaults() -> None:
     assert Config.S3_BUCKET == "knowforge-documents-bucket"
+    assert Config.S3_REGION == "us-east-1"
     assert Config.EMBEDDING_MODEL == "text-embedding-3-small"
     assert Config.IMAGE_VECTOR_TABLE_NAME == "knowforge_vectors_image"
     assert "application/pdf" in Config.ALLOWED_MIME_TYPES

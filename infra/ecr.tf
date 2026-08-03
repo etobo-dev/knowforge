@@ -1,5 +1,5 @@
 resource "aws_ecr_repository" "back" {
-  name                 = "${var.project_name}-back"
+  name                 = local.back_ecr_repository
   image_tag_mutability = "MUTABLE"
 
   image_scanning_configuration {
