@@ -1,0 +1,13 @@
+{
+  "project_name": "knowforge",
+  "aws": {
+    "region": "us-east-1"
+  },
+  "back": {
+    "ecr_repository": "knowforge-back",
+    "lambda_name": "knowforge-back"
+  },
+  "storage": {
+    "documents_bucket": "knowforge-documents-bucket"
+  }
+}

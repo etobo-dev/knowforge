@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - "infra/**"
+      - "config/project.json"
       - ".github/workflows/infra.yml"
 
 env:

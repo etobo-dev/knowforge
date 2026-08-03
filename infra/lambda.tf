@@ -1,7 +1,6 @@
 # ================================
 # KNOWFORGE BACK (Lambda container)
-# Image is built and pushed to ECR manually from back/:
-#   docker buildx build --platform linux/amd64 --provenance=false --load -t knowforge-back:latest .
+# Image is built and pushed via scripts/deploy-back.sh (CI or local).
 # ================================
 
 data "aws_ecr_image" "back" {
@@ -10,7 +9,7 @@ data "aws_ecr_image" "back" {
 }
 
 resource "aws_iam_role" "back_lambda" {
-  name = "${var.project_name}-back-lambda"
+  name = "${local.project_name}-back-lambda"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -32,7 +31,7 @@ resource "aws_iam_role_policy_attachment" "back_lambda_basic_execution" {
 }
 
 resource "aws_iam_role_policy" "back_lambda_s3" {
-  name = "${var.project_name}-back-lambda-s3"
+  name = "${local.project_name}-back-lambda-s3"
   role = aws_iam_role.back_lambda.id
 
   policy = jsonencode({
@@ -59,18 +58,18 @@ resource "aws_iam_role_policy" "back_lambda_s3" {
 }
 
 resource "aws_cloudwatch_log_group" "back_lambda" {
-  name              = "/aws/lambda/${var.project_name}-back"
+  name              = "/aws/lambda/${local.back_lambda_name}"
   retention_in_days = 14
 }
 
 resource "aws_lambda_function" "back" {
-  function_name = "${var.project_name}-back"
+  function_name = local.back_lambda_name
   role          = aws_iam_role.back_lambda.arn
   package_type  = "Image"
   image_uri     = "${aws_ecr_repository.back.repository_url}@${data.aws_ecr_image.back.image_digest}"
   architectures = [var.lambda_architecture]
   timeout       = 900
-  memory_size     = 2048
+  memory_size   = 2048
 
   ephemeral_storage {
     size = 1024
@@ -80,6 +79,8 @@ resource "aws_lambda_function" "back" {
     variables = {
       DATABASE_URL   = var.database_url
       OPENAI_API_KEY = var.openai_api_key
+      S3_BUCKET      = local.documents_bucket
+      S3_REGION      = local.aws_region
     }
   }
 
@@ -92,7 +93,7 @@ resource "aws_lambda_function" "back" {
 }
 
 resource "aws_apigatewayv2_api" "back" {
-  name          = "${var.project_name}-back"
+  name          = local.back_lambda_name
   protocol_type = "HTTP"
 
   cors_configuration {
@@ -130,7 +131,7 @@ resource "aws_lambda_permission" "back_api_gateway" {
   source_arn    = "${aws_apigatewayv2_api.back.execution_arn}/*/*"
 }
 
-output "back_lambda_function_name" {
+output "back_lambda_name" {
   value = aws_lambda_function.back.function_name
 }
 
