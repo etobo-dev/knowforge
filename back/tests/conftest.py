@@ -39,6 +39,7 @@ def engine() -> Generator[Any, None, None]:
     Base.metadata.create_all(test_engine)
     yield test_engine
     Base.metadata.drop_all(test_engine)
+    test_engine.dispose()
 
 
 @pytest.fixture
