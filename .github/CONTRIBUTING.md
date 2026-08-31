@@ -118,7 +118,7 @@ no-context reply instead of calling the LLM with an empty context.
 
 ## Issues (GitHub)
 
-Repo: **etobo-tech/knowforge**. Labels: [`.github/LABELS.md`](./LABELS.md) only.
+Repo: **etobo-dev/knowforge**. Labels: [`.github/LABELS.md`](./LABELS.md) only.
 
 ### When to open an issue
 
@@ -164,20 +164,20 @@ Move `status::pending` → `status::doing` → close issue when shipped.
 
 | Template | Use |
 |----------|-----|
-| [Task](./ISSUE_TEMPLATE/task.md) | Default — implementation from `MILESTONES.md` |
+| [Feature request](./ISSUE_TEMPLATE/feature_request.md) | Default — milestone slices from `MILESTONES.md` and net-new product ideas |
 | [Bug report](./ISSUE_TEMPLATE/bug_report.md) | Incorrect behavior |
-| [Feature request](./ISSUE_TEMPLATE/feature_request.md) | New product capability (not yet in milestones) |
 
-### Issue body (task template)
+### Issue body (feature request template)
 
-Keep it short until implementation starts; expand acceptance criteria when picking up the issue.
+Use for milestone work and product features. Keep it short until implementation starts; expand the success checklist when picking up the issue.
 
-Required sections: **Goal**, **Scope**, **Acceptance criteria**, **Verify**.
+Fill **What does success look like, and how can we measure that?** with measurable checkboxes. **Every box must be checked before closing the issue.**
 
-Link planning docs when relevant (`ROADMAP` §, `ARCHITECTURE` diagram).
+Link planning docs when relevant (`ROADMAP` §, `ARCHITECTURE` diagram, `MILESTONES.md` row).
 
 ### Closing issues
 
+- All items in **What does success look like, and how can we measure that?** must be checked.
 - Reference in commit: `#<issue>` in the header.
 - PR description: `Closes #<issue>` when the PR fully completes the issue.
 
