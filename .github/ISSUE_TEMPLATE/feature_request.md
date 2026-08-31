@@ -43,7 +43,12 @@ For example: "The user should be able to use the UI/API/configuration to <perfor
 Define both the success metrics and acceptance criteria. Note that success metrics indicate the desired business outcomes, while acceptance criteria indicate when the solution is working correctly. If there is no way to measure success, link to an issue that will implement a way to measure this.
 
 If measurement is not yet possible, link the follow-up task needed to add instrumentation.
+
+All items below must be checked before closing the issue.
 -->
+
+- [ ]
+- [ ]
 
 ### What is the competitive advantage or differentiation for this feature?
 
