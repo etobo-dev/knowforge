@@ -1,11 +1,10 @@
 from datetime import datetime, timezone
 from types import SimpleNamespace
-from uuid import uuid4
 
 from llama_index.core.schema import NodeWithScore, TextNode
 
 from db.models import Message, MessageRole
-from rag.config import Config
+from config.settings import DEFAULT_CONTENT_KIND_IMAGE, DEFAULT_CONTENT_KIND_TEXT
 from rag.query import multimodal_chat
 
 
@@ -14,7 +13,7 @@ def _image_node(*, s3_key: str | None = "uploads/chart.png") -> NodeWithScore:
         node=TextNode(
             text="Revenue chart description",
             metadata={
-                "content_kind": Config.CONTENT_KIND_IMAGE,
+                "content_kind": DEFAULT_CONTENT_KIND_IMAGE,
                 "filename": "chart.png",
                 "mime_type": "image/png",
                 "s3_key": s3_key,
@@ -28,7 +27,7 @@ def test_split_text_and_image_nodes() -> None:
     text_node = NodeWithScore(
         node=TextNode(
             text="Policy text",
-            metadata={"content_kind": Config.CONTENT_KIND_TEXT},
+            metadata={"content_kind": DEFAULT_CONTENT_KIND_TEXT},
         ),
         score=0.5,
     )

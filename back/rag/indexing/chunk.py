@@ -2,14 +2,15 @@ from functools import lru_cache
 
 from llama_index.core.node_parser import SentenceSplitter
 
-from rag.config import Config
+from config import get_settings
 
 
 @lru_cache
 def _get_splitter() -> SentenceSplitter:
+    settings = get_settings()
     return SentenceSplitter(
-        chunk_size=Config.CHUNK_SIZE,
-        chunk_overlap=Config.CHUNK_OVERLAP,
+        chunk_size=settings.chunk_size,
+        chunk_overlap=settings.chunk_overlap,
     )
 
 

@@ -8,7 +8,7 @@ from api.routes.documents import DEV_USER_ID
 from db.factories.documents import build_document
 from db.models import DocumentStatus
 from db.repositories.documents import db_persist_new_document
-from rag.config import Config
+from config import get_settings
 from tests.helpers.files import plain_text_bytes
 
 
@@ -154,7 +154,8 @@ def test_upload_rejects_unsupported_mime_type(client: TestClient) -> None:
 
 
 def test_upload_rejects_oversized_file(client: TestClient) -> None:
-    oversized = b"x" * (Config.MAX_FILE_SIZE + 1)
+    settings = get_settings()
+    oversized = b"x" * (settings.max_file_size + 1)
     response = client.post(
         "/api/documents/upload",
         files={"file": ("big.txt", oversized, "text/plain")},

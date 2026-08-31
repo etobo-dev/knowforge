@@ -3,18 +3,35 @@ import pytest
 from config import get_settings, load_settings
 from config.settings import (
     DEFAULT_ALLOWED_MIME_TYPES,
+    DEFAULT_CHAT_MODEL,
     DEFAULT_CHAT_TURNS_ORG_DAILY,
     DEFAULT_CHAT_TURNS_USER_DAILY,
     DEFAULT_DOCUMENTS_ORG_DAILY,
     DEFAULT_DOCUMENTS_USER_DAILY,
+    DEFAULT_EMBEDDING_DIMENSION,
+    DEFAULT_EMBEDDING_MODEL,
     DEFAULT_EMBEDDING_TOKENS_ORG_DAILY,
     DEFAULT_EMBEDDING_TOKENS_USER_DAILY,
+    DEFAULT_IMAGE_INDEX_DETAIL,
+    DEFAULT_IMAGE_SEARCH_DESCRIPTION_PROMPT,
+    DEFAULT_IMAGE_VECTOR_TABLE_NAME,
+    DEFAULT_MAX_FILE_SIZE,
+    DEFAULT_S3_BUCKET,
+    DEFAULT_S3_REGION,
     DEFAULT_SOFT_DELETE_RETENTION_DAYS,
+    DEFAULT_TOP_K,
+    DEFAULT_CHUNK_OVERLAP,
+    DEFAULT_CHUNK_SIZE,
+    DEFAULT_CHAT_IMAGE_DETAIL,
+    DEFAULT_CONTENT_KIND_IMAGE,
+    DEFAULT_CONTENT_KIND_TEXT,
+    DEFAULT_VISION_MODEL,
+    DEFAULT_VECTOR_TABLE_NAME,
 )
-from rag.config import Config
+from rag.llama_settings import configure_llama_index
 
 
-def test_load_settings_matches_rag_config_defaults(
+def test_load_settings_exposes_expected_defaults(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.setenv("OPENAI_API_KEY", "test-openai-key")
@@ -23,24 +40,24 @@ def test_load_settings_matches_rag_config_defaults(
 
     settings = load_settings()
 
-    assert settings.s3_bucket == Config.S3_BUCKET
-    assert settings.s3_region == Config.S3_REGION
-    assert settings.embedding_model == Config.EMBEDDING_MODEL
-    assert settings.embedding_dimension == Config.EMBEDDING_DIMENSION
-    assert settings.vector_table_name == Config.VECTOR_TABLE_NAME
-    assert settings.image_vector_table_name == Config.IMAGE_VECTOR_TABLE_NAME
-    assert settings.vision_model == Config.VISION_MODEL
-    assert settings.chat_model == Config.CHAT_MODEL
-    assert settings.image_index_detail == Config.IMAGE_INDEX_DETAIL
-    assert settings.chat_image_detail == Config.CHAT_IMAGE_DETAIL
-    assert settings.content_kind_image == Config.CONTENT_KIND_IMAGE
-    assert settings.content_kind_text == Config.CONTENT_KIND_TEXT
-    assert settings.image_search_description_prompt == Config.IMAGE_SEARCH_DESCRIPTION_PROMPT
-    assert settings.top_k == Config.TOP_K
-    assert settings.chunk_size == Config.CHUNK_SIZE
-    assert settings.chunk_overlap == Config.CHUNK_OVERLAP
-    assert settings.allowed_mime_types == frozenset(Config.ALLOWED_MIME_TYPES)
-    assert settings.max_file_size == Config.MAX_FILE_SIZE
+    assert settings.s3_bucket == DEFAULT_S3_BUCKET
+    assert settings.s3_region == DEFAULT_S3_REGION
+    assert settings.embedding_model == DEFAULT_EMBEDDING_MODEL
+    assert settings.embedding_dimension == DEFAULT_EMBEDDING_DIMENSION
+    assert settings.vector_table_name == DEFAULT_VECTOR_TABLE_NAME
+    assert settings.image_vector_table_name == DEFAULT_IMAGE_VECTOR_TABLE_NAME
+    assert settings.vision_model == DEFAULT_VISION_MODEL
+    assert settings.chat_model == DEFAULT_CHAT_MODEL
+    assert settings.image_index_detail == DEFAULT_IMAGE_INDEX_DETAIL
+    assert settings.chat_image_detail == DEFAULT_CHAT_IMAGE_DETAIL
+    assert settings.content_kind_image == DEFAULT_CONTENT_KIND_IMAGE
+    assert settings.content_kind_text == DEFAULT_CONTENT_KIND_TEXT
+    assert settings.image_search_description_prompt == DEFAULT_IMAGE_SEARCH_DESCRIPTION_PROMPT
+    assert settings.top_k == DEFAULT_TOP_K
+    assert settings.chunk_size == DEFAULT_CHUNK_SIZE
+    assert settings.chunk_overlap == DEFAULT_CHUNK_OVERLAP
+    assert settings.allowed_mime_types == DEFAULT_ALLOWED_MIME_TYPES
+    assert settings.max_file_size == DEFAULT_MAX_FILE_SIZE
 
 
 def test_load_settings_reads_openai_api_key_from_env(
@@ -106,9 +123,30 @@ def test_get_settings_returns_cached_instance(
     assert first is second
 
 
-def test_allowed_mime_types_match_rag_config() -> None:
+def test_allowed_mime_types_include_pdf_and_images() -> None:
     settings = load_settings()
 
     assert settings.allowed_mime_types == DEFAULT_ALLOWED_MIME_TYPES
     assert "application/pdf" in settings.allowed_mime_types
     assert "image/png" in settings.allowed_mime_types
+
+
+def test_llama_settings_uses_central_chat_model(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import config.settings as settings_module
+    import rag.llama_settings as llama_settings_module
+
+    monkeypatch.setenv("OPENAI_API_KEY", "test-openai-key")
+    monkeypatch.setattr(settings_module, "DEFAULT_CHAT_MODEL", "gpt-4o")
+    llama_settings_module._configured = False
+
+    import config as config_package
+
+    config_package._settings = None
+
+    configure_llama_index()
+
+    from llama_index.core import Settings
+
+    assert Settings.llm.model == "gpt-4o"

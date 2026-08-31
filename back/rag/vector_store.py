@@ -10,8 +10,8 @@ from llama_index.core.vector_stores.types import (
 )
 from llama_index.vector_stores.postgres import PGVectorStore
 
+from config import get_settings
 from db.models import Document, DocumentChunk
-from rag.config import Config
 from utils import get_pgvector_connection_strings
 
 _text_store: PGVectorStore | None = None
@@ -19,12 +19,13 @@ _image_store: PGVectorStore | None = None
 
 
 def _build_pg_vector_store(*, table_name: str) -> PGVectorStore:
+    settings = get_settings()
     sync_url, async_url = get_pgvector_connection_strings()
     return PGVectorStore.from_params(
         connection_string=sync_url,
         async_connection_string=async_url,
         table_name=table_name,
-        embed_dim=Config.EMBEDDING_DIMENSION,
+        embed_dim=settings.embedding_dimension,
         use_jsonb=True,
         perform_setup=True,
     )
@@ -33,14 +34,18 @@ def _build_pg_vector_store(*, table_name: str) -> PGVectorStore:
 def get_pg_vector_store() -> PGVectorStore:
     global _text_store
     if _text_store is None:
-        _text_store = _build_pg_vector_store(table_name=Config.VECTOR_TABLE_NAME)
+        settings = get_settings()
+        _text_store = _build_pg_vector_store(table_name=settings.vector_table_name)
     return _text_store
 
 
 def get_pg_image_vector_store() -> PGVectorStore:
     global _image_store
     if _image_store is None:
-        _image_store = _build_pg_vector_store(table_name=Config.IMAGE_VECTOR_TABLE_NAME)
+        settings = get_settings()
+        _image_store = _build_pg_vector_store(
+            table_name=settings.image_vector_table_name
+        )
     return _image_store
 
 
@@ -89,6 +94,7 @@ def _text_node_from_chunk(
     chunk: DocumentChunk,
     embedding: list[float],
 ) -> TextNode:
+    settings = get_settings()
     return TextNode(
         id_=str(chunk.id),
         text=chunk.content,
@@ -99,7 +105,7 @@ def _text_node_from_chunk(
             "chunk_id": str(chunk.id),
             "filename": document.filename,
             "page_number": chunk.page_number,
-            "content_kind": Config.CONTENT_KIND_TEXT,
+            "content_kind": settings.content_kind_text,
         },
     )
 
@@ -110,6 +116,7 @@ def _image_node_from_chunk(
     chunk: DocumentChunk,
     embedding: list[float],
 ) -> TextNode:
+    settings = get_settings()
     metadata = chunk.metadata_ or {}
     search_description = metadata.get("search_description") or chunk.content
     return TextNode(
@@ -123,7 +130,7 @@ def _image_node_from_chunk(
             "s3_key": document.s3_key,
             "filename": document.filename,
             "mime_type": document.mime_type,
-            "content_kind": Config.CONTENT_KIND_IMAGE,
+            "content_kind": settings.content_kind_image,
         },
     )
 

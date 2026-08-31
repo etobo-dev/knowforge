@@ -4,24 +4,27 @@ import uuid
 from fastapi import UploadFile
 from sqlalchemy.orm import Session
 
+from config import get_settings
 from db.models import Document
 from db.repositories.documents import db_find_by_user_and_content_hash
 from db.services.document_upload import handle_existing_document, handle_new_document
-from rag.config import Config
 
 
 def _check_content_type(content_type: str) -> None:
-    if content_type not in Config.ALLOWED_MIME_TYPES:
+    settings = get_settings()
+    if content_type not in settings.allowed_mime_types:
         raise ValueError(
             f"Unsupported file type: {content_type}. "
-            f"Allowed: {', '.join(sorted(Config.ALLOWED_MIME_TYPES))}"
+            f"Allowed: {', '.join(sorted(settings.allowed_mime_types))}"
         )
 
 
 def _check_file_size(size: int) -> None:
-    if size > Config.MAX_FILE_SIZE:
+    settings = get_settings()
+    if size > settings.max_file_size:
         raise ValueError(
-            f"File too large: {size / 1024 / 1024:.1f} MB. Max: {Config.MAX_FILE_SIZE / 1024 / 1024:.0f} MB"
+            f"File too large: {size / 1024 / 1024:.1f} MB. "
+            f"Max: {settings.max_file_size / 1024 / 1024:.0f} MB"
         )
 
 

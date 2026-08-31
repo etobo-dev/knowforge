@@ -4,7 +4,7 @@ from llama_index.core import VectorStoreIndex
 from llama_index.core.base.base_retriever import BaseRetriever
 from llama_index.core.schema import NodeWithScore, QueryBundle
 
-from rag.config import Config
+from config import get_settings
 from rag.vector_store import (
     get_pg_image_vector_store,
     get_pg_vector_store,
@@ -49,21 +49,22 @@ def _score_value(score: float | None) -> float:
 
 
 def create_user_retriever(user_id: UUID) -> BaseRetriever:
+    settings = get_settings()
     user_filters = user_metadata_filters(user_id)
 
     text_index = VectorStoreIndex.from_vector_store(get_pg_vector_store())
     image_index = VectorStoreIndex.from_vector_store(get_pg_image_vector_store())
 
     text_retriever = text_index.as_retriever(
-        similarity_top_k=Config.TOP_K,
+        similarity_top_k=settings.top_k,
         filters=user_filters,
     )
     image_retriever = image_index.as_retriever(
-        similarity_top_k=Config.TOP_K,
+        similarity_top_k=settings.top_k,
         filters=user_filters,
     )
 
     return FusedVectorRetriever(
         retrievers=[text_retriever, image_retriever],
-        similarity_top_k=Config.TOP_K,
+        similarity_top_k=settings.top_k,
     )
