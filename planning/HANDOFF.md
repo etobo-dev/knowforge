@@ -30,7 +30,7 @@ Optional: `front/AGENTS.md` for Next.js-specific notes.
 | Product design | Documented and self-reviewed (**ROADMAP rev 3**) |
 | Milestone backlog | Draft in `MILESTONES.md` (north star, **not** all opened on GitHub) |
 | Implementation of Phase 0+ | **Not started** as of this handoff |
-| **Next work** | **M0.1 — Central configuration** (`M0.1.1` then `M0.1.2`) |
+| **Next work** | **M0.1 — Central configuration** (`[Cross] Add central config module` then `[Cross] Point existing code at central config`) |
 | External beta | End of **Phase 1** / milestone **M1.10** |
 
 ---
@@ -40,8 +40,9 @@ Optional: `front/AGENTS.md` for Next.js-specific notes.
 - **`ROADMAP.md` + `MILESTONES.md` = north star** in the repo. Easy to consult; details may change.
 - **Do not create all ~19 milestones / ~71 issues on GitHub at once.** That over-commits to a future that will drift.
 - **GitHub active window (rule):**
-  - At most **1 open milestone**
+  - At most **1 open milestone** (set on each issue via GitHub **Milestone** field — not in title or body)
   - About **≤5–8 open issues**
+  - Issue titles: `[Module] …` per `MILESTONES.md` **Mod** column (e.g. `[API] Verify Cognito JWT on requests`)
   - When a milestone closes → open the **next** one from `MILESTONES.md` and expand issue bodies only as needed
 - Phase **2** and **3** stay **outline-only** in markdown until Phase 1 / beta is done. **Do not implement them now.**
 
@@ -128,7 +129,7 @@ Shared chats (Phase 2): viewers still need workspace KB access (public via org m
 > Read `planning/HANDOFF.md`, `planning/ROADMAP.md`, and `planning/MILESTONES.md`. Summarize current status and the next issue to implement. Do not write code yet.
 
 **Implement:**  
-> Read `planning/HANDOFF.md`. Implement **M0.1.1** only (central config module), following AGENTS.md. Keep the product working; test locally; do not open unrelated milestones.
+> Read `planning/HANDOFF.md`. Implement **`[Cross] Add central config module`** only (slice M0.1.1), following AGENTS.md. Keep the product working; test locally; do not open unrelated milestones.
 
 ---
 

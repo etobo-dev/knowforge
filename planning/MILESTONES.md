@@ -8,13 +8,30 @@ Aligned with [`ROADMAP.md`](./ROADMAP.md) rev 3.
 
 Production rule: every closed milestone leaves the product **working**; prefer a **noticeable** user-facing change when the dependency chain allows.
 
+### Modules & GitHub issues
+
+Knowforge is organized as **microservices** (like [noticrypt](https://github.com/etobo-tech/noticrypt)). See [`.github/CONTRIBUTING.md`](../.github/CONTRIBUTING.md).
+
+| Mod | Deploy | Responsibility |
+|-----|--------|----------------|
+| **API** | Lambda REST | HTTP routes, Postgres, authz, quotas, job enqueue |
+| **Ingest** | Lambda worker | Sources, extract/index graph, embeddings, vector upsert |
+| **Chat** | Lambda SSE + worker | Chat graph, retrieval, streaming, message persistence |
+| **Front** | Next.js | UI |
+| **Infra** | Terraform | AWS resources |
+| **Cross** | — | Shared config, CI, hooks, `planning/`, multi-module changes |
+
+- **GitHub issue title:** `[Mod] Title` — e.g. `[Cross] Add central config module`.
+- **GitHub milestone field:** planning milestone name (e.g. `M0.1 — Central configuration`). Not in title or body.
+- **Slice ID** (`M0.1.1`): internal row key in this doc only.
+
 ### Active window (GitHub)
 
 | Field | Value |
 |-------|--------|
 | Policy | At most **1** open GitHub milestone and about **≤5–8** issues. Do **not** create the full tree upfront. |
 | Current focus | **M0.1 — Central configuration** |
-| Next issues | `M0.1.1` → `M0.1.2` |
+| Next issues | `[Cross] Add central config module` → `[Cross] Point existing code at central config` |
 | Not now | Phase 2 / Phase 3 implementation; bulk GitHub milestones |
 
 ---
@@ -24,10 +41,10 @@ Production rule: every closed milestone leaves the product **working**; prefer a
 ### M0.1 — Central configuration
 Ship shared config so limits/models are not hardcoded.
 
-| ID | Title | Short definition |
-|----|--------|------------------|
-| M0.1.1 | Add central config module | Create one place for quotas, models, retention, and feature constants. |
-| M0.1.2 | Point existing code at central config | Switch current reads to the new module without changing behavior. |
+| ID | Mod | Title | Definition |
+|----|-----|-------|------------|
+| M0.1.1 | Cross | Add central config module | Create one place for quotas, models, retention, and feature constants. |
+| M0.1.2 | Cross | Point existing code at central config | Switch current reads to the new module without changing behavior. |
 
 **Done when:** config changes (e.g. chat daily limit) are edited in one file/env set.
 
@@ -36,13 +53,13 @@ Ship shared config so limits/models are not hardcoded.
 ### M0.2 — Google login (Cognito)
 Users sign in with Google; hard-coded dev user goes away.
 
-| ID | Title | Short definition |
-|----|--------|------------------|
-| M0.2.1 | Provision Cognito + Google IdP | Create Cognito (local/staging/prod) with Google as IdP. |
-| M0.2.2 | API verifies Cognito JWT | Backend rejects unauthenticated API calls. |
-| M0.2.3 | Front login / logout | UI can sign in with Google and sign out. |
-| M0.2.4 | Map Cognito user → app user | Persist `sub`/email; replace `DEV_USER_ID` everywhere. |
-| M0.2.5 | Auth cutover on staging | Staging requires login; existing flows still work for signed-in users. |
+| ID | Mod | Title | Definition |
+|----|-----|-------|------------|
+| M0.2.1 | Infra | Provision Cognito + Google IdP | Create Cognito (local/staging/prod) with Google as IdP. |
+| M0.2.2 | API | Verify Cognito JWT on requests | Backend rejects unauthenticated API calls. |
+| M0.2.3 | Front | Add Google login and logout | UI can sign in with Google and sign out. |
+| M0.2.4 | API | Map Cognito user to app user | Persist `sub`/email; replace `DEV_USER_ID` everywhere. |
+| M0.2.5 | Cross | Require auth on staging | Staging requires login; existing flows still work for signed-in users. |
 
 **Done when:** production/staging users must log in with Google to use the app.
 
@@ -51,13 +68,13 @@ Users sign in with Google; hard-coded dev user goes away.
 ### M0.3 — Organizations & workspaces
 Multi-tenant data model + migrate current docs/chats.
 
-| ID | Title | Short definition |
-|----|--------|------------------|
-| M0.3.1 | Org & workspace schema | Tables for org, workspace (public/private), membership. |
-| M0.3.2 | Create org + public workspace on first login | Onboarding creates default public workspace (user = owner). |
-| M0.3.3 | Scope documents & chats to workspace | Add `organization_id` / `workspace_id`; APIs filter by active workspace. |
-| M0.3.4 | Backfill existing data | Move current docs/chats into each user’s default public workspace. |
-| M0.3.5 | Private workspace create + membership | Org owner/admin can create private WS and add/remove members. |
+| ID | Mod | Title | Definition |
+|----|-----|-------|------------|
+| M0.3.1 | API | Add org and workspace schema | Tables for org, workspace (public/private), membership. |
+| M0.3.2 | API | Create org on first login | Onboarding creates default public workspace (user = owner). |
+| M0.3.3 | API | Scope documents and chats to workspace | Add `organization_id` / `workspace_id`; APIs filter by active workspace. |
+| M0.3.4 | API | Backfill existing data to workspace | Move current docs/chats into each user's default public workspace. |
+| M0.3.5 | API | Add private workspace and membership | Org owner/admin can create private WS and add/remove members. |
 
 **Done when:** data is per org/workspace; private WS only visible to members.
 
@@ -66,12 +83,12 @@ Multi-tenant data model + migrate current docs/chats.
 ### M0.4 — Navigation (org / workspace)
 Noticeable UX: breadcrumb + scoped URLs.
 
-| ID | Title | Short definition |
-|----|--------|------------------|
-| M0.4.1 | Scoped routes | Routes like `/{org}/{ws}/...` for main app areas. |
-| M0.4.2 | Header breadcrumb | Clickable ancestors only (current level + above). |
-| M0.4.3 | Org / workspace switcher | User can switch context; lists only accessible workspaces. |
-| M0.4.4 | English UI string pass | User-facing copy in English; strings centralized for later i18n. |
+| ID | Mod | Title | Definition |
+|----|-----|-------|------------|
+| M0.4.1 | Front | Add scoped org and workspace routes | Routes like `/{org}/{ws}/...` for main app areas. |
+| M0.4.2 | Front | Add header breadcrumb | Clickable ancestors only (current level + above). |
+| M0.4.3 | Front | Add org and workspace switcher | User can switch context; lists only accessible workspaces. |
+| M0.4.4 | Front | Centralize English UI strings | User-facing copy in English; strings centralized for later i18n. |
 
 **Done when:** URL/breadcrumb show where you are; switching workspace changes files/chats context.
 
@@ -80,13 +97,13 @@ Noticeable UX: breadcrumb + scoped URLs.
 ### M0.5 — Roles & permissions
 IAM-style permissions without billing.
 
-| ID | Title | Short definition |
-|----|--------|------------------|
-| M0.5.1 | Permission catalog | Fixed list of permission bits (docs, chat, sources, members, …). |
-| M0.5.2 | Built-in roles | Org: owner/admin/member; WS: owner/admin/member/viewer. |
-| M0.5.3 | Custom roles | Create/edit custom roles as permission bundles (org + workspace). |
-| M0.5.4 | Attach multiple roles | User can have several roles per scope; authz = union (OR). |
-| M0.5.5 | Enforce permissions in API | Endpoints check permissions; public WS write defaults applied. |
+| ID | Mod | Title | Definition |
+|----|-----|-------|------------|
+| M0.5.1 | API | Add permission catalog | Fixed list of permission bits (docs, chat, sources, members, …). |
+| M0.5.2 | API | Add built-in roles | Org: owner/admin/member; WS: owner/admin/member/viewer. |
+| M0.5.3 | API | Add custom roles | Create/edit custom roles as permission bundles (org + workspace). |
+| M0.5.4 | API | Attach multiple roles per scope | User can have several roles per scope; authz = union (OR). |
+| M0.5.5 | API | Enforce permissions in API | Endpoints check permissions; public WS write defaults applied. |
 
 **Done when:** API denies forbidden actions; custom roles can be assigned.
 
@@ -95,12 +112,12 @@ IAM-style permissions without billing.
 ### M0.6 — Invites & settings UI
 Teammates can join; admins manage access.
 
-| ID | Title | Short definition |
-|----|--------|------------------|
-| M0.6.1 | Email invite flow | Invite to org and/or workspace with preassigned roles. |
-| M0.6.2 | Accept invite on login | Invited user lands in the right org/workspace. |
-| M0.6.3 | Org settings page | `/{org}/settings` — members, roles, invites. |
-| M0.6.4 | Workspace settings page | `/{org}/{ws}/settings` — members, roles, invites. |
+| ID | Mod | Title | Definition |
+|----|-----|-------|------------|
+| M0.6.1 | API | Add email invite flow | Invite to org and/or workspace with preassigned roles. |
+| M0.6.2 | API | Accept invite on login | Invited user lands in the right org/workspace. |
+| M0.6.3 | Front | Add org settings page | `/{org}/settings` — members, roles, invites. |
+| M0.6.4 | Front | Add workspace settings page | `/{org}/{ws}/settings` — members, roles, invites. |
 
 **Done when:** an owner can invite someone who then sees the shared public (or private) workspace.
 
@@ -109,12 +126,12 @@ Teammates can join; admins manage access.
 ### M0.7 — Async job backbone
 Queues for later ingest/chat workers (no user-facing agent change yet).
 
-| ID | Title | Short definition |
-|----|--------|------------------|
-| M0.7.1 | JobRunner interface | Abstract enqueue/handle for background jobs. |
-| M0.7.2 | SQS + Lambda worker | First transport: SQS triggers Lambda worker. |
-| M0.7.3 | EventBridge schedule stub | Hook for scheduled jobs (sync later). |
-| M0.7.4 | Staging job smoke test | Enqueue a no-op/test job end-to-end in staging. |
+| ID | Mod | Title | Definition |
+|----|-----|-------|------------|
+| M0.7.1 | Cross | Add JobRunner interface | Abstract enqueue/handle for background jobs. |
+| M0.7.2 | Infra | Add SQS and Lambda worker | First transport: SQS triggers Lambda worker. |
+| M0.7.3 | Infra | Add EventBridge schedule stub | Hook for scheduled jobs (sync later). |
+| M0.7.4 | Cross | Run staging job smoke test | Enqueue a no-op/test job end-to-end in staging. |
 
 **Done when:** a test job runs async in staging via SQS.
 
@@ -123,13 +140,13 @@ Queues for later ingest/chat workers (no user-facing agent change yet).
 ### M0.8 — Secrets & abuse quotas
 Protect keys and cap free beta usage.
 
-| ID | Title | Short definition |
-|----|--------|------------------|
-| M0.8.1 | SecretStore interface | Abstraction for secrets. |
-| M0.8.2 | SSM + local `.env` backends | Prod/staging SSM; local `.env` for dev/tests. |
-| M0.8.3 | usage_events ledger | Postgres append-only usage for chat/ingest/embeddings. |
-| M0.8.4 | RateLimiter + DynamoDB | Fast daily counters; user + org caps from central config. |
-| M0.8.5 | Enforce quotas on chat & upload | Soft warn then hard block when caps hit. |
+| ID | Mod | Title | Definition |
+|----|-----|-------|------------|
+| M0.8.1 | Cross | Add SecretStore interface | Abstraction for secrets. |
+| M0.8.2 | Cross | Add SSM and local env backends | Prod/staging SSM; local `.env` for dev/tests. |
+| M0.8.3 | API | Add usage_events ledger | Postgres append-only usage for chat/ingest/embeddings. |
+| M0.8.4 | Cross | Add RateLimiter with DynamoDB | Fast daily counters; user + org caps from central config. |
+| M0.8.5 | Cross | Enforce quotas on chat and upload | Soft warn then hard block when caps hit. |
 
 **Done when:** hitting chat/upload limits blocks with a clear message; secrets not in plaintext config for staging/prod.
 
@@ -138,11 +155,11 @@ Protect keys and cap free beta usage.
 ### M0.9 — Observability baseline
 Errors and agent traces without expensive CloudWatch metrics.
 
-| ID | Title | Short definition |
-|----|--------|------------------|
-| M0.9.1 | Bugsnag for app errors | Capture exceptions/warnings from API and front. |
-| M0.9.2 | Tracer interface | Abstract tracing for later graphs. |
-| M0.9.3 | LangSmith tracer wiring | Beta tracer implementation = LangSmith. |
+| ID | Mod | Title | Definition |
+|----|-----|-------|------------|
+| M0.9.1 | Cross | Wire Bugsnag for app errors | Capture exceptions/warnings from API and front. |
+| M0.9.2 | Cross | Add Tracer interface | Abstract tracing for later graphs. |
+| M0.9.3 | Cross | Wire LangSmith tracer | Beta tracer implementation = LangSmith. |
 
 **Done when:** a forced error appears in Bugsnag; tracer can record a sample span in LangSmith.
 
@@ -153,11 +170,11 @@ Errors and agent traces without expensive CloudWatch metrics.
 ### M1.1 — Source abstraction + upload path
 Extensible ingest entry without Drive yet.
 
-| ID | Title | Short definition |
-|----|--------|------------------|
-| M1.1.1 | Source connector interface | Common contract for list/fetch/credentials/sync hooks. |
-| M1.1.2 | LocalUpload source | Current upload becomes a Source implementation. |
-| M1.1.3 | Wire upload API through Source | Parent flow uses Source; behavior matches today’s upload. |
+| ID | Mod | Title | Definition |
+|----|-----|-------|------------|
+| M1.1.1 | Ingest | Add source connector interface | Common contract for list/fetch/credentials/sync hooks. |
+| M1.1.2 | Ingest | Add LocalUpload source | Current upload becomes a Source implementation. |
+| M1.1.3 | API | Wire upload API through Source | Parent flow uses Source; behavior matches today's upload. |
 
 **Done when:** upload still works in prod via Source abstraction (no LlamaIndex removal yet).
 
@@ -166,13 +183,13 @@ Extensible ingest entry without Drive yet.
 ### M1.2 — Ingest graph + async indexing
 Faster uploads; LangGraph ingest; drop sync-in-request.
 
-| ID | Title | Short definition |
-|----|--------|------------------|
-| M1.2.1 | Extractor plugins | Pluggable extractors (PDF/DOCX/text/image). |
-| M1.2.2 | Build ingest LangGraph | Nodes: resolve → extract → normalize → chunk → embed → upsert → finalize. |
-| M1.2.3 | Enqueue ingest on upload | Upload stores file + job; returns without waiting for full index. |
-| M1.2.4 | Worker runs ingest graph | SQS worker executes ingest; status progresses to indexed/failed. |
-| M1.2.5 | Delete sync-in-request indexing | Remove old blocking index path after cutover. |
+| ID | Mod | Title | Definition |
+|----|-----|-------|------------|
+| M1.2.1 | Ingest | Add extractor plugins | Pluggable extractors (PDF/DOCX/text/image). |
+| M1.2.2 | Ingest | Build ingest LangGraph | Nodes: resolve → extract → normalize → chunk → embed → upsert → finalize. |
+| M1.2.3 | API | Enqueue ingest on upload | Upload stores file + job; returns without waiting for full index. |
+| M1.2.4 | Ingest | Run ingest graph in worker | SQS worker executes ingest; status progresses to indexed/failed. |
+| M1.2.5 | Ingest | Remove sync-in-request indexing | Remove old blocking index path after cutover. |
 
 **Done when:** user uploads and UI shows processing→indexed asynchronously; old sync path gone.
 
@@ -181,12 +198,12 @@ Faster uploads; LangGraph ingest; drop sync-in-request.
 ### M1.3 — Streaming chat shell (Function URL)
 Noticeable: tokens stream while agent still legacy underneath (or thin stub).
 
-| ID | Title | Short definition |
-|----|--------|------------------|
-| M1.3.1 | ChatRunEvent contract | Versioned SSE events: node/token/sources/done/error. |
-| M1.3.2 | Lambda Function URL for SSE | Streaming endpoint (no ALB); auth still Cognito. |
-| M1.3.3 | Front consumes SSE | Chat UI streams tokens instead of waiting for full reply. |
-| M1.3.4 | Bridge legacy chat → SSE | Temporarily stream legacy LlamaIndex replies over the new pipe. |
+| ID | Mod | Title | Definition |
+|----|-----|-------|------------|
+| M1.3.1 | Chat | Add ChatRunEvent contract | Versioned SSE events: node/token/sources/done/error. |
+| M1.3.2 | Chat | Add Lambda Function URL for SSE | Streaming endpoint (no ALB); auth still Cognito. |
+| M1.3.3 | Front | Consume SSE in chat UI | Chat UI streams tokens instead of waiting for full reply. |
+| M1.3.4 | Chat | Bridge legacy chat to SSE | Temporarily stream legacy LlamaIndex replies over the new pipe. |
 
 **Done when:** chat answers appear token-by-token in production via Function URL.
 
@@ -195,13 +212,13 @@ Noticeable: tokens stream while agent still legacy underneath (or thin stub).
 ### M1.4 — LangGraph chat + MultiQuery
 Real agent cutover for chat.
 
-| ID | Title | Short definition |
-|----|--------|------------------|
-| M1.4.1 | Chat graph skeleton | Nodes load→understand→plan→retrieve→grade→tools→generate→persist. |
-| M1.4.2 | MultiQuery retrieve (~3) | Reformulate query thrice, retrieve, fuse/dedupe. |
-| M1.4.3 | Multimodal branch | Keep image-aware generate when image nodes hit. |
-| M1.4.4 | Dual state persist | Product DB messages/sources + LangGraph checkpointer. |
-| M1.4.5 | Cut over chat to LangGraph | SSE runs LangGraph; legacy chat engine removed. |
+| ID | Mod | Title | Definition |
+|----|-----|-------|------------|
+| M1.4.1 | Chat | Add chat graph skeleton | Nodes load→understand→plan→retrieve→grade→tools→generate→persist. |
+| M1.4.2 | Chat | Add MultiQuery retrieve | Reformulate query thrice, retrieve, fuse/dedupe. |
+| M1.4.3 | Chat | Add multimodal branch | Keep image-aware generate when image nodes hit. |
+| M1.4.4 | Chat | Persist dual state | Product DB messages/sources + LangGraph checkpointer. |
+| M1.4.5 | Chat | Cut over chat to LangGraph | SSE runs LangGraph; legacy chat engine removed. |
 
 **Done when:** production chat is LangGraph + MultiQuery; LlamaIndex chat engine gone.
 
@@ -210,10 +227,10 @@ Real agent cutover for chat.
 ### M1.5 — Citations panel
 Noticeable trust UX.
 
-| ID | Title | Short definition |
-|----|--------|------------------|
-| M1.5.1 | Structured sources on persist | Store citation payloads from the graph. |
-| M1.5.2 | Inline [n] + sources panel | UI shows markers and a panel with excerpts/links. |
+| ID | Mod | Title | Definition |
+|----|-----|-------|------------|
+| M1.5.1 | Chat | Persist structured sources | Store citation payloads from the graph. |
+| M1.5.2 | Front | Add inline citations and sources panel | UI shows markers and a panel with excerpts/links. |
 
 **Done when:** each answer shows sources the user can open.
 
@@ -222,11 +239,11 @@ Noticeable trust UX.
 ### M1.6 — Retriever behind interface (+ hybrid if capacity)
 Clean retrieval; optional hybrid before beta freeze.
 
-| ID | Title | Short definition |
-|----|--------|------------------|
-| M1.6.1 | Retriever interface | Support vector / hybrid / hybrid+rerank. |
-| M1.6.2 | Vector retriever cutover | Text + image vector search via new stack (not LlamaIndex). |
-| M1.6.3 | Hybrid retriever (optional) | Vector + Postgres FTS fused (RRF); ship if milestone time allows. |
+| ID | Mod | Title | Definition |
+|----|-----|-------|------------|
+| M1.6.1 | Chat | Add retriever interface | Support vector / hybrid / hybrid+rerank. |
+| M1.6.2 | Chat | Cut over vector retriever | Text + image vector search via new stack (not LlamaIndex). |
+| M1.6.3 | Chat | Add hybrid retriever (optional) | Vector + Postgres FTS fused (RRF); ship if milestone time allows. |
 
 **Done when:** retrieval no longer depends on LlamaIndex; hybrid optional.
 
@@ -235,13 +252,13 @@ Clean retrieval; optional hybrid before beta freeze.
 ### M1.7 — Google Drive source
 Second real source; picker + safe retention.
 
-| ID | Title | Short definition |
-|----|--------|------------------|
-| M1.7.1 | GCP OAuth app for Drive | Knowforge OAuth client; verification track started. |
-| M1.7.2 | Connect Drive + Picker | User selects folders/files only; tokens in SecretStore. |
-| M1.7.3 | Drive fetch → ingest job | Selected files enqueue ingest; no mirror of whole Drive. |
-| M1.7.4 | Disconnect + purge | Revoke tokens; soft-delete indexed docs from that source. |
-| M1.7.5 | Manual sync button | User can “Sync now” for a Drive source. |
+| ID | Mod | Title | Definition |
+|----|-----|-------|------------|
+| M1.7.1 | Infra | Create GCP OAuth app for Drive | Knowforge OAuth client; verification track started. |
+| M1.7.2 | Ingest | Connect Drive and Picker | User selects folders/files only; tokens in SecretStore. |
+| M1.7.3 | Ingest | Enqueue Drive fetch as ingest job | Selected files enqueue ingest; no mirror of whole Drive. |
+| M1.7.4 | Ingest | Disconnect Drive and purge | Revoke tokens; soft-delete indexed docs from that source. |
+| M1.7.5 | Ingest | Add manual Drive sync button | User can "Sync now" for a Drive source. |
 
 **Done when:** user connects Drive, picks folders, files appear indexed; disconnect cleans up.
 
@@ -250,10 +267,10 @@ Second real source; picker + safe retention.
 ### M1.8 — Scheduled sync
 Keep Drive (and future sources) fresh.
 
-| ID | Title | Short definition |
-|----|--------|------------------|
-| M1.8.1 | SyncStrategy interface | manual \| scheduled \| webhook. |
-| M1.8.2 | Scheduled sync via EventBridge | Periodic sync for connected sources. |
+| ID | Mod | Title | Definition |
+|----|-----|-------|------------|
+| M1.8.1 | Ingest | Add SyncStrategy interface | manual \| scheduled \| webhook. |
+| M1.8.2 | Ingest | Add scheduled sync via EventBridge | Periodic sync for connected sources. |
 
 **Done when:** Drive sources refresh on a schedule without manual click.
 
@@ -262,11 +279,11 @@ Keep Drive (and future sources) fresh.
 ### M1.9 — Soft delete, purge, export
 Data lifecycle basics.
 
-| ID | Title | Short definition |
-|----|--------|------------------|
-| M1.9.1 | Soft delete docs/chats/sources | Deleted items hidden; retained per config (30d). |
-| M1.9.2 | Hard purge job | After retention, delete S3, chunks, vectors, checkpointer bits. |
-| M1.9.3 | Org data export | Owner can export org data package. |
+| ID | Mod | Title | Definition |
+|----|-----|-------|------------|
+| M1.9.1 | API | Add soft delete for docs, chats, sources | Deleted items hidden; retained per config (30d). |
+| M1.9.2 | Cross | Add hard purge job | After retention, delete S3, chunks, vectors, checkpointer bits. |
+| M1.9.3 | API | Add org data export | Owner can export org data package. |
 
 **Done when:** delete is reversible for 30 days then purged; export works for owner.
 
@@ -275,10 +292,10 @@ Data lifecycle basics.
 ### M1.10 — Retire LlamaIndex
 Dependency cleanup after all cutovers.
 
-| ID | Title | Short definition |
-|----|--------|------------------|
-| M1.10.1 | Remove LlamaIndex usage | No imports/deps left; LangGraph/LangChain + pgvector only. |
-| M1.10.2 | Staging full checklist | Auth, upload, Drive, SSE chat, citations, quotas, delete—all green. |
+| ID | Mod | Title | Definition |
+|----|-----|-------|------------|
+| M1.10.1 | Cross | Remove LlamaIndex usage | No imports/deps left; LangGraph/LangChain + pgvector only. |
+| M1.10.2 | Cross | Run staging full checklist | Auth, upload, Drive, SSE chat, citations, quotas, delete—all green. |
 
 **Done when:** LlamaIndex removed; staging checklist signed off → **external beta**.
 
@@ -332,4 +349,4 @@ Noticeable production moments (examples):
 
 ---
 
-*Draft for review. Next: approve → create GitHub milestones/issues from this list → start M0.1.1.*
+*Next: create GitHub milestone + issues for the active window → start `[Cross] Add central config module`.*

@@ -1,20 +1,17 @@
 ---
 name: Task (milestone work)
 about: Implementation slice from planning/MILESTONES.md
-title: "[M0.0.0] "
+title: "[Cross] "
 labels:
   - type::task
+  - audience::engineering
   - status::pending
   - priority::medium
 ---
 
 ## Goal
 
-<!-- One sentence: what this slice delivers. Match the short definition in planning/MILESTONES.md. -->
-
-## Milestone
-
-<!-- e.g. M0.1.1 — link planning/MILESTONES.md section -->
+<!-- One sentence: what this slice delivers. Match planning/MILESTONES.md for this row. -->
 
 ## Scope
 

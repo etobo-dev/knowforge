@@ -8,7 +8,7 @@
  *   <module>\<type>(scope): #<issue>/<subtask> <subject>
  *
  * Example:
- *   cross\feat(planning): #3 add architecture diagrams
+ *   ingest\feat(back): #42 enqueue ingest on upload
  *
  * Rules:
  * - Header + blank line + non-empty body
@@ -24,11 +24,11 @@ const MAX_LINE_LENGTH = 100;
 const VALID_MODULES = [
   'all',
   'api',
-  'back',
+  'chat',
   'cross',
   'front',
   'infra',
-  'rag',
+  'ingest',
 ];
 
 const VALID_TYPES = [
@@ -89,7 +89,7 @@ function parseHeader(header) {
   if (!headerMatch) {
     fail('Invalid header format', [
       'Expected: <module>\\<type>(scope): #<issue> <subject>',
-      'Example : cross\\feat(planning): #3 add architecture diagrams',
+      'Example : ingest\\feat(back): #42 enqueue ingest on upload',
     ]);
   }
 

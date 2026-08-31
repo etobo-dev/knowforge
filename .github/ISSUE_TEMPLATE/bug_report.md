@@ -1,9 +1,10 @@
 ---
 name: Bug report
 about: Something is broken or incorrect
-title: "[bug] "
+title: "[API] "
 labels:
   - type::bug
+  - audience::users
   - status::pending
   - priority::medium
 ---
@@ -33,7 +34,7 @@ labels:
 
 ## Module
 
-<!-- Pick one label: module::api | module::back | module::rag | module::front | module::infra | module::cross -->
+<!-- Pick one label: module::api | module::ingest | module::chat | module::front | module::infra | module::cross -->
 
 ## Logs / screenshots
 
