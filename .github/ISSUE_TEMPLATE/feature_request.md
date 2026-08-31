@@ -1,3 +1,14 @@
+---
+name: Feature request
+about: New product capability not yet in milestones
+title: "[Cross] "
+labels:
+  - type::feature
+  - audience::product
+  - status::idea
+  - priority::medium
+---
+
 <!-- Generic template for feature requests. -->
 
 ### Problem to solve

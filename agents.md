@@ -38,7 +38,8 @@
 
 - Follow [`.github/CONTRIBUTING.md`](.github/CONTRIBUTING.md) and [`.github/LABELS.md`](.github/LABELS.md).
 - Open issues only for the **active milestone window** (see [`planning/HANDOFF.md`](planning/HANDOFF.md)).
-- Default template: **Task** with title `[M0.x.y] …`.
+- Default template: **Task** with title `[Module] …` (see `MILESTONES.md` **Mod** column).
+- Set the GitHub **Milestone** field from the planning milestone; do not put it in the title or body.
 
 ## Repository Awareness
 

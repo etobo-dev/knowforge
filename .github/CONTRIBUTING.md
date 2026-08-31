@@ -18,7 +18,7 @@ Planning context: [`planning/HANDOFF.md`](../planning/HANDOFF.md), [`planning/MI
 
 | Part | Rule | Examples |
 |------|------|----------|
-| `module` | Area of the repo (see below) | `back`, `rag`, `cross` |
+| `module` | Deployable area (see below) | `api`, `ingest`, `chat`, `cross` |
 | `type` | Kind of change | `feat`, `fix`, `docs`, `test` |
 | `scope` | Layer or concern | `back`, `front`, `ci`, `infra` |
 | `issue` | GitHub issue number | `#12`, `#12/2` (optional subtask) |
@@ -29,19 +29,21 @@ Planning context: [`planning/HANDOFF.md`](../planning/HANDOFF.md), [`planning/MI
 - Header + **blank line** + **non-empty body** (required).
 - Max **100 characters** per line.
 - `module`, `type`, `scope`, and `subject` are **lowercase**.
-- Reference a real GitHub issue when one exists; for repo-only chores before issues exist, open a `type::chore` issue first or use the planning issue for the active milestone.
+- Reference a real GitHub issue when one exists; for repo-only work before issues exist, use `#0` or open a `type::task` issue in the active milestone window.
 
 ### Valid modules
 
-| Module | Path / meaning |
-|--------|----------------|
-| `all` | Multiple modules in one commit |
-| `api` | `back/api/` |
-| `back` | `back/` except `api/` and `rag/` |
-| `rag` | `back/rag/` |
-| `front` | `front/` |
-| `infra` | `infra/`, deploy scripts |
-| `cross` | Hooks, CI, root config, `planning/`, `validate-commit.js` |
+Deployable microservices (target layout; migration from monolithic `back/` is gradual).
+
+| Module | Path / deploy | Meaning |
+|--------|----------------|---------|
+| `all` | Multiple modules | One commit/issue spans API + Ingest + Chat, etc. |
+| `api` | `api/` (today `back/api/` + DB) | REST handlers, Postgres, authz, quotas, enqueue jobs |
+| `ingest` | `ingest/` (today `back/rag/` indexing) | Sources, extract/index graph, embeddings, vector upsert |
+| `chat` | `chat/` (today `back/rag/` query) | Chat graph, retrieval, SSE streaming, message persist |
+| `front` | `front/` | Next.js app |
+| `infra` | `infra/` | Terraform, deploy scripts |
+| `cross` | Repo-wide | Shared config, CI, hooks, `planning/`, `validate-commit.js` |
 
 ### Valid types
 
@@ -60,7 +62,7 @@ commit is **documentation-only** (no code). Repo workflow (hooks, templates, lab
 
 | You are changing… | Type | Scope | Example |
 |-------------------|------|-------|---------|
-| App / API code | `feat` / `fix` | `back`, `front`, `infra` | `back\feat(back): #15 add config module` |
+| Service code | `feat` / `fix` | `back`, `front`, `infra` | `api\feat(back): #15 add workspace filter` |
 | `planning/*.md` | `feat` / `docs` | `planning` | `cross\feat(planning): #3 add architecture diagrams` |
 | `.github/`, hooks, `validate-commit.js` | `feat` / `fix` / `docs` | `chore` | `cross\feat(chore): #0 add issue templates` |
 | GitHub Actions | `feat` / `fix` | `ci` | `cross\feat(ci): #0 add backend deploy workflow` |
@@ -93,14 +95,14 @@ do not depend on chat history.
 ```
 
 ```text
-back\feat(back): #15 add central config module
+cross\feat(back): #15 add central config module
 
-Introduce `config/` package for quotas and model names per ROADMAP M0.1.1.
-No behavior change until M0.1.2 wires existing reads.
+Introduce shared config for quotas and model names. No behavior change
+until a follow-up issue wires existing reads.
 ```
 
 ```text
-rag\fix(back): #42/1 guard empty multiquery results
+chat\fix(back): #42 guard empty multiquery results
 
 When all three reformulations return zero nodes, return the standard
 no-context reply instead of calling the LLM with an empty context.
@@ -121,33 +123,42 @@ Repo: **etobo-tech/knowforge**. Labels: [`.github/LABELS.md`](./LABELS.md) only.
 ### When to open an issue
 
 - **Active window:** only issues for the **current milestone** in [`planning/MILESTONES.md`](../planning/MILESTONES.md) (see HANDOFF §3).
-- One issue ≈ one row in MILESTONES (`M0.1.1`, `M0.1.2`, …).
+- One issue ≈ one row in [`planning/MILESTONES.md`](../planning/MILESTONES.md).
+- Assign the GitHub **Milestone** field to the planning milestone (e.g. `M0.1 — Central configuration`). Do **not** put the milestone in the title or body.
 - Do not bulk-create the full backlog; open the next slice when the current milestone closes.
 
 ### Title format
 
+Like [noticrypt](https://github.com/etobo-tech/noticrypt): **module prefix in brackets**, imperative title.
+
 ```text
-[<milestone-id>] <imperative short title>
+[Module] <imperative short title>
 ```
 
 | Kind | Pattern | Example |
 |------|---------|---------|
-| Milestone task | `[M0.1.1] …` | `[M0.1.1] Add central config module` |
-| Bug | `[bug] …` | `[bug] Upload fails on duplicate hash` |
-| Feature (product) | `[feature] …` | `[feature] Google Drive folder picker` |
+| Task | `[API] …` | `[API] Verify Cognito JWT on requests` |
+| Task | `[Ingest] …` | `[Ingest] Enqueue ingest job on upload` |
+| Task | `[Cross] …` | `[Cross] Add central config module` |
+| Bug | `[Module] …` | `[API] Upload fails on duplicate hash` |
+| Feature (product) | `[Module] …` | `[Ingest] Google Drive folder picker` |
 
-Use the milestone ID from `MILESTONES.md` when the issue maps to a planned slice.
+Use the **Mod** column in `MILESTONES.md` for the bracket tag. Title text = **Title** column in the same row.
 
 ### Labels (typical)
 
+Pick labels only from [`.github/LABELS.md`](./LABELS.md). Use **one** `audience::` label per issue.
+
 | Work type | Labels |
 |-----------|--------|
-| M0.1.1 implementation | `type::task`, `module::cross`, `milestone::M0.1`, `status::pending`, `priority::medium` |
-| API route change | `type::task`, `module::api`, `milestone::M0.x`, … |
-| Production bug | `type::bug`, `module::<area>`, `priority::high`, `status::pending` |
-| User-facing feature | `type::feature`, `module::<area>`, … |
+| Milestone task (default) | `type::task`, `module::<area>`, `audience::engineering`, `status::pending`, `priority::medium` |
+| API route change | `type::task`, `module::api`, `audience::engineering`, … |
+| Production bug | `type::bug`, `module::<area>`, `audience::users`, `priority::high`, `status::pending` |
+| User-facing feature (not in milestones) | `type::feature`, `module::<area>`, `audience::product` or `audience::users` |
+| Accepted tech debt | `type::task`, `module::<area>`, `audience::engineering`, `status::controlled-technical-debt` |
+| Stale / obsolete issue | `status::expired` (then close) |
 
-Move `status::pending` → `status::doing` → `status::done` as you work.
+Move `status::pending` → `status::doing` → close issue when shipped.
 
 ### Templates
 
@@ -175,7 +186,8 @@ Link planning docs when relevant (`ROADMAP` §, `ARCHITECTURE` diagram).
 ## Quick reference
 
 ```text
-Commit:  back\feat(back): #15 add central config module
-Issue:   [M0.1.1] Add central config module
-Labels:  type::task, module::cross, milestone::M0.1, status::pending
+Commit:    cross\feat(back): #15 add central config module
+Issue:     [Cross] Add central config module
+Milestone: M0.1 — Central configuration   (GitHub milestone field only)
+Labels:    type::task, module::cross, audience::engineering, status::pending
 ```
