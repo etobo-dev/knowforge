@@ -18,9 +18,9 @@ os.environ["AWS_SECRET_ACCESS_KEY"] = "testing"
 os.environ["AWS_DEFAULT_REGION"] = "us-east-1"
 os.environ["OPENAI_API_KEY"] = "test-openai-key"
 
+from config import get_settings  # noqa: E402
 from db import models as db_models  # noqa: E402
 from db.base import Base  # noqa: E402
-from rag.config import Config  # noqa: E402
 from rag.s3 import get_s3_client  # noqa: E402
 from tests.helpers.embeddings import deterministic_embeddings  # noqa: E402
 from tests.helpers.vector_store import patch_vector_store, reset_fake_vector_store  # noqa: E402
@@ -105,8 +105,9 @@ def fake_chat_reply(monkeypatch: pytest.MonkeyPatch) -> None:
 def s3_mock() -> Generator[None, None, None]:
     get_s3_client.cache_clear()
     with mock_aws():
-        client = boto3.client("s3", region_name=Config.S3_REGION)
-        client.create_bucket(Bucket=Config.S3_BUCKET)
+        settings = get_settings()
+        client = boto3.client("s3", region_name=settings.s3_region)
+        client.create_bucket(Bucket=settings.s3_bucket)
         yield
     get_s3_client.cache_clear()
 

@@ -3,8 +3,8 @@ from typing import TYPE_CHECKING, cast
 
 import boto3
 
+from config import get_settings
 from db.models import Document
-from rag.config import Config
 
 if TYPE_CHECKING:
     from types_boto3_s3 import S3Client
@@ -13,13 +13,15 @@ if TYPE_CHECKING:
 @functools.cache
 def get_s3_client() -> "S3Client":
     # Default credential chain: env/profile locally, IAM role in Lambda.
-    return boto3.client("s3", region_name=Config.S3_REGION)
+    settings = get_settings()
+    return boto3.client("s3", region_name=settings.s3_region)
 
 
 def upload_document_to_s3(document: Document, content: bytes) -> None:
+    settings = get_settings()
     s3 = get_s3_client()
     s3.put_object(
-        Bucket=Config.S3_BUCKET,
+        Bucket=settings.s3_bucket,
         Key=document.s3_key,
         Body=content,
         ContentType=document.mime_type,
@@ -27,8 +29,9 @@ def upload_document_to_s3(document: Document, content: bytes) -> None:
 
 
 def delete_object_from_s3(s3_key: str) -> None:
+    settings = get_settings()
     s3 = get_s3_client()
-    s3.delete_object(Bucket=Config.S3_BUCKET, Key=s3_key)
+    s3.delete_object(Bucket=settings.s3_bucket, Key=s3_key)
 
 
 def _safe_attachment_filename(name: str) -> str:
@@ -41,13 +44,14 @@ def presigned_inline_url(
     *,
     expires_in: int = 3600,
 ) -> str:
+    settings = get_settings()
     s3 = get_s3_client()
     return cast(
         str,
         s3.generate_presigned_url(
             "get_object",
             Params={
-                "Bucket": Config.S3_BUCKET,
+                "Bucket": settings.s3_bucket,
                 "Key": s3_key,
             },
             ExpiresIn=expires_in,
@@ -61,6 +65,7 @@ def presigned_download_url(
     *,
     expires_in: int = 300,
 ) -> str:
+    settings = get_settings()
     s3 = get_s3_client()
     disposition = (
         f'attachment; filename="{_safe_attachment_filename(download_filename)}"'
@@ -70,7 +75,7 @@ def presigned_download_url(
         s3.generate_presigned_url(
             "get_object",
             Params={
-                "Bucket": Config.S3_BUCKET,
+                "Bucket": settings.s3_bucket,
                 "Key": s3_key,
                 "ResponseContentDisposition": disposition,
             },

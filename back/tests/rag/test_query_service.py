@@ -16,7 +16,7 @@ from tests.helpers.constants import DEV_USER_ID
 
 
 def test_generate_chat_reply_without_indexed_documents(db_session: Session) -> None:
-    chat = db_create_chat(db_session, DEV_USER_ID, title="Empty KB")
+    db_create_chat(db_session, DEV_USER_ID, title="Empty KB")
 
     reply = generate_chat_reply(
         db_session,
@@ -108,7 +108,7 @@ def test_generate_chat_reply_returns_fallback_without_retrieved_context(
     db_session: Session,
     monkeypatch,
 ) -> None:
-    chat = db_create_chat(db_session, DEV_USER_ID, title="Empty context")
+    db_create_chat(db_session, DEV_USER_ID, title="Empty context")
 
     class FakeRetriever:
         def retrieve(self, query_bundle):
@@ -130,7 +130,7 @@ def test_generate_chat_reply_returns_content_and_sources(
     db_session: Session,
     monkeypatch,
 ) -> None:
-    chat = db_create_chat(db_session, DEV_USER_ID, title="With context")
+    db_create_chat(db_session, DEV_USER_ID, title="With context")
     source_node = _source_node()
 
     class FakeRetriever:
@@ -171,7 +171,7 @@ def test_generate_chat_reply_returns_fallback_for_empty_model_response(
     db_session: Session,
     monkeypatch,
 ) -> None:
-    chat = db_create_chat(db_session, DEV_USER_ID, title="Empty response")
+    db_create_chat(db_session, DEV_USER_ID, title="Empty response")
     source_node = _source_node()
 
     class FakeRetriever:

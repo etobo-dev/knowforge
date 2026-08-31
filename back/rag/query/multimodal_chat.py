@@ -9,7 +9,7 @@ from llama_index.core.llms import (
 from llama_index.core.schema import NodeWithScore
 
 from db.models import Message
-from rag.config import Config
+from config import get_settings
 from rag.query.memory import prior_chat_messages
 from rag.query.prompts import SYSTEM_PROMPT
 from rag.query.sources import is_image_node
@@ -37,6 +37,7 @@ def _image_context_and_blocks(
     context_lines: list[str] = []
     image_blocks: list[ImageBlock] = []
 
+    settings = get_settings()
     for index, node_with_score in enumerate(image_nodes, start=1):
         metadata = node_with_score.node.metadata
         filename = metadata.get("filename", "image")
@@ -50,7 +51,7 @@ def _image_context_and_blocks(
                 ImageBlock(
                     url=presigned_inline_url(s3_key),
                     image_mimetype=metadata.get("mime_type"),
-                    detail=Config.CHAT_IMAGE_DETAIL,
+                    detail=settings.chat_image_detail,
                 )
             )
 

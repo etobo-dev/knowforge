@@ -1,4 +1,3 @@
-import pytest
 from sqlalchemy.orm import Session
 
 from db.factories.documents import build_document

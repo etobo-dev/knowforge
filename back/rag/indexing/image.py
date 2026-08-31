@@ -8,28 +8,30 @@ from db.repositories.documents import (
     db_save_indexed_image_chunk,
 )
 from llama_index.core.llms import ChatMessage, ImageBlock, MessageRole, TextBlock
-from rag.config import Config
+from config import get_settings
 from rag.indexing.embed import embed_texts
 from rag.llama_settings import get_vision_llm
 from rag.vector_store import sync_image_document_vectors
 
 
 def _vision_description_message(content: bytes, mime_type: str) -> ChatMessage:
+    settings = get_settings()
     return ChatMessage(
         role=MessageRole.USER,
         blocks=[
-            TextBlock(text=Config.IMAGE_SEARCH_DESCRIPTION_PROMPT),
+            TextBlock(text=settings.image_search_description_prompt),
             ImageBlock(
                 image=content,
                 image_mimetype=mime_type,
-                detail=Config.IMAGE_INDEX_DETAIL,
+                detail=settings.image_index_detail,
             ),
         ],
     )
 
 
 def generate_image_search_description(content: bytes, mime_type: str) -> str:
-    llm = get_vision_llm(detail=Config.IMAGE_INDEX_DETAIL)
+    settings = get_settings()
+    llm = get_vision_llm(detail=settings.image_index_detail)
     response = llm.chat(messages=[_vision_description_message(content, mime_type)])
     description = str(response.message.content).strip()
 

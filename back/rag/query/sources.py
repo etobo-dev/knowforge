@@ -2,13 +2,14 @@ from uuid import UUID
 
 from llama_index.core.schema import NodeWithScore
 
-from rag.config import Config
+from config import get_settings
 from rag.query.types import SourceRef
 
 
 def is_image_node(node_with_score: NodeWithScore) -> bool:
+    settings = get_settings()
     return (
-        node_with_score.node.metadata.get("content_kind") == Config.CONTENT_KIND_IMAGE
+        node_with_score.node.metadata.get("content_kind") == settings.content_kind_image
     )
 
 

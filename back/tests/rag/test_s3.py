@@ -1,7 +1,7 @@
 import boto3
 
 from db.factories.documents import build_document
-from rag.config import Config
+from config import get_settings
 from rag.s3 import (
     _safe_attachment_filename,
     delete_object_from_s3,
@@ -31,8 +31,9 @@ def test_upload_delete_and_presign_roundtrip(s3_mock: None) -> None:
     url = presigned_download_url(document.s3_key, document.filename)
     delete_object_from_s3(document.s3_key)
 
-    s3 = boto3.client("s3", region_name=Config.S3_REGION)
-    objects = s3.list_objects_v2(Bucket=Config.S3_BUCKET).get("Contents", [])
+    settings = get_settings()
+    s3 = boto3.client("s3", region_name=settings.s3_region)
+    objects = s3.list_objects_v2(Bucket=settings.s3_bucket).get("Contents", [])
 
     assert url.startswith("http")
     assert not any(item["Key"] == document.s3_key for item in objects)

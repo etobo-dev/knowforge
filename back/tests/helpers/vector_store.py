@@ -5,7 +5,7 @@ from uuid import UUID
 from llama_index.core.schema import TextNode
 
 from db.models import Document, DocumentChunk
-from rag.config import Config
+from config.settings import DEFAULT_CONTENT_KIND_IMAGE
 
 _text_nodes: list[TextNode] = []
 _image_nodes: list[TextNode] = []
@@ -70,7 +70,7 @@ def fake_sync_image_document_vectors(
                     "filename": document.filename,
                     "s3_key": document.s3_key,
                     "mime_type": document.mime_type,
-                    "content_kind": Config.CONTENT_KIND_IMAGE,
+                    "content_kind": DEFAULT_CONTENT_KIND_IMAGE,
                 },
             )
         )
