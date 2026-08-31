@@ -28,6 +28,18 @@
 - Review changes before each commit.
 - After each commit, re-check status and confirm before continuing with the next micro-change.
 
+### Commit messages
+
+- Follow [`.github/CONTRIBUTING.md`](.github/CONTRIBUTING.md) (enforced by `validate-commit.js`).
+- Header: `<module>\<type>(scope): #<issue> <subject>` — body required, max 100 chars/line, lowercase subject.
+- Body must explain **why** and meaningful **what**; use bullets when helpful; backtick code identifiers.
+
+### Issues
+
+- Follow [`.github/CONTRIBUTING.md`](.github/CONTRIBUTING.md) and [`.github/LABELS.md`](.github/LABELS.md).
+- Open issues only for the **active milestone window** (see [`planning/HANDOFF.md`](planning/HANDOFF.md)).
+- Default template: **Task** with title `[M0.x.y] …`.
+
 ## Repository Awareness
 
 - Always account for existing repository resources such as:
