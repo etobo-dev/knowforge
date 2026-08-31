@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Planning docs
+    url: https://github.com/etobo-tech/knowforge/blob/main/planning/HANDOFF.md
+    about: Read HANDOFF, ROADMAP, and MILESTONES before opening work
+  - name: Contributing (commits & issues)
+    url: https://github.com/etobo-tech/knowforge/blob/main/.github/CONTRIBUTING.md
+    about: Commit format and issue conventions
