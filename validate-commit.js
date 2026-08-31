@@ -8,7 +8,7 @@
  *   <module>\<type>(scope): #<issue>/<subtask> <subject>
  *
  * Example:
- *   cross\feat(chore): #2 bootstrap repo issue workflow
+ *   cross\feat(planning): #3 add architecture diagrams
  *
  * Rules:
  * - Header + blank line + non-empty body
@@ -23,11 +23,12 @@ const MAX_LINE_LENGTH = 100;
 
 const VALID_MODULES = [
   'all',
-  "api",
-  "back",
+  'api',
+  'back',
   'cross',
-  'views',
-  "rag",
+  'front',
+  'infra',
+  'rag',
 ];
 
 const VALID_TYPES = [
@@ -44,10 +45,11 @@ const VALID_TYPES = [
 
 const VALID_SCOPES = [
   'chore',
-  'docs',
   'back',
   'front',
-  'ci'
+  'ci',
+  'infra',
+  'planning',
 ];
 
 function fail(message, details = []) {
@@ -87,7 +89,7 @@ function parseHeader(header) {
   if (!headerMatch) {
     fail('Invalid header format', [
       'Expected: <module>\\<type>(scope): #<issue> <subject>',
-      'Example : cross\\feat(chore): #2 bootstrap repo issue workflow',
+      'Example : cross\\feat(planning): #3 add architecture diagrams',
     ]);
   }
 
