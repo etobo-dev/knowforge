@@ -1,4 +1,4 @@
-# GitHub labels (etobo-tech/knowforge)
+# GitHub labels (etobo-dev/knowforge)
 
 Canonical allowlist for issue labels. Agents and humans must **only** assign labels
 from this file. Do **not** create new labels via the API or UI unless this list is
