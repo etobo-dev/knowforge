@@ -16,6 +16,8 @@ from config.settings import (
     DEFAULT_IMAGE_SEARCH_DESCRIPTION_PROMPT,
     DEFAULT_IMAGE_VECTOR_TABLE_NAME,
     DEFAULT_MAX_FILE_SIZE,
+    DEFAULT_S3_BUCKET,
+    DEFAULT_S3_REGION,
     DEFAULT_SOFT_DELETE_RETENTION_DAYS,
     DEFAULT_TOP_K,
     DEFAULT_CHUNK_OVERLAP,
@@ -33,13 +35,11 @@ def test_load_settings_exposes_expected_defaults(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.setenv("OPENAI_API_KEY", "test-openai-key")
-    monkeypatch.setenv("S3_BUCKET", "knowforge-documents-bucket")
-    monkeypatch.setenv("S3_REGION", "us-east-1")
 
     settings = load_settings()
 
-    assert settings.s3_bucket == "knowforge-documents-bucket"
-    assert settings.s3_region == "us-east-1"
+    assert settings.s3_bucket == DEFAULT_S3_BUCKET
+    assert settings.s3_region == DEFAULT_S3_REGION
     assert settings.embedding_model == DEFAULT_EMBEDDING_MODEL
     assert settings.embedding_dimension == DEFAULT_EMBEDDING_DIMENSION
     assert settings.vector_table_name == DEFAULT_VECTOR_TABLE_NAME
@@ -69,29 +69,6 @@ def test_load_settings_reads_openai_api_key_from_env(
     settings = load_settings()
 
     assert settings.openai_api_key == "custom-key"
-
-
-def test_load_settings_requires_s3_bucket(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    monkeypatch.setenv("OPENAI_API_KEY", "test-openai-key")
-    monkeypatch.delenv("S3_BUCKET", raising=False)
-
-    with pytest.raises(ValueError, match="S3_BUCKET"):
-        load_settings()
-
-
-def test_load_settings_reads_s3_from_env(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    monkeypatch.setenv("OPENAI_API_KEY", "test-openai-key")
-    monkeypatch.setenv("S3_BUCKET", "custom-bucket")
-    monkeypatch.setenv("S3_REGION", "eu-west-1")
-
-    settings = load_settings()
-
-    assert settings.s3_bucket == "custom-bucket"
-    assert settings.s3_region == "eu-west-1"
 
 
 def test_load_settings_exposes_beta_quota_defaults() -> None:
