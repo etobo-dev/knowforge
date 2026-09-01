@@ -55,6 +55,19 @@ def db_session(engine: Any) -> Generator[Session, None, None]:
 
 
 @pytest.fixture(autouse=True)
+def reset_auth_settings(monkeypatch: pytest.MonkeyPatch) -> Generator[None, None, None]:
+    import config as config_package
+
+    monkeypatch.setenv("AUTH_DISABLED", "true")
+    monkeypatch.setenv("COGNITO_USER_POOL_ID", "us-east-1_TestPool")
+    monkeypatch.setenv("COGNITO_APP_CLIENT_ID", "testclientid")
+    monkeypatch.setenv("COGNITO_REGION", "us-east-1")
+    config_package._settings = None
+    yield
+    config_package._settings = None
+
+
+@pytest.fixture(autouse=True)
 def fake_vector_store(monkeypatch: pytest.MonkeyPatch) -> None:
     reset_fake_vector_store()
     patch_vector_store(monkeypatch)
