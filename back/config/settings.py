@@ -42,6 +42,9 @@ DEFAULT_EMBEDDING_TOKENS_ORG_DAILY = 1_000_000
 
 DEFAULT_SOFT_DELETE_RETENTION_DAYS = 30
 
+DEFAULT_S3_BUCKET = "knowforge-documents-bucket"
+DEFAULT_S3_REGION = "us-east-1"
+
 
 @dataclass(frozen=True)
 class DailyQuotaLimits:
@@ -91,8 +94,8 @@ class Settings:
 
 def load_settings() -> Settings:
     return Settings(
-        s3_bucket=get_env(key="S3_BUCKET"),
-        s3_region=get_env(key="S3_REGION"),
+        s3_bucket=DEFAULT_S3_BUCKET,
+        s3_region=DEFAULT_S3_REGION,
         openai_api_key=get_env(key="OPENAI_API_KEY"),
         embedding_model=DEFAULT_EMBEDDING_MODEL,
         embedding_dimension=DEFAULT_EMBEDDING_DIMENSION,

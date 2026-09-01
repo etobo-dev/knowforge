@@ -21,8 +21,6 @@ os.environ["AUTH_DISABLED"] = "true"
 os.environ["COGNITO_USER_POOL_ID"] = "us-east-1_TestPool"
 os.environ["COGNITO_APP_CLIENT_ID"] = "testclientid"
 os.environ["COGNITO_REGION"] = "us-east-1"
-os.environ["S3_BUCKET"] = "knowforge-documents-bucket"
-os.environ["S3_REGION"] = "us-east-1"
 
 from config import get_settings  # noqa: E402
 from db import models as db_models  # noqa: E402

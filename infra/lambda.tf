@@ -79,8 +79,6 @@ resource "aws_lambda_function" "back" {
     variables = {
       DATABASE_URL           = var.database_url
       OPENAI_API_KEY         = var.openai_api_key
-      S3_BUCKET              = local.documents_bucket
-      S3_REGION              = local.aws_region
       AUTH_DISABLED          = "true"
       COGNITO_USER_POOL_ID   = aws_cognito_user_pool.main.id
       COGNITO_APP_CLIENT_ID  = aws_cognito_user_pool_client.web.id
