@@ -17,6 +17,12 @@ os.environ["AWS_ACCESS_KEY_ID"] = "testing"
 os.environ["AWS_SECRET_ACCESS_KEY"] = "testing"
 os.environ["AWS_DEFAULT_REGION"] = "us-east-1"
 os.environ["OPENAI_API_KEY"] = "test-openai-key"
+os.environ["AUTH_DISABLED"] = "true"
+os.environ["COGNITO_USER_POOL_ID"] = "us-east-1_TestPool"
+os.environ["COGNITO_APP_CLIENT_ID"] = "testclientid"
+os.environ["COGNITO_REGION"] = "us-east-1"
+os.environ["S3_BUCKET"] = "knowforge-documents-bucket"
+os.environ["S3_REGION"] = "us-east-1"
 
 from config import get_settings  # noqa: E402
 from db import models as db_models  # noqa: E402
