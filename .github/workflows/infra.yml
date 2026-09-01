@@ -11,6 +11,8 @@ env:
   TF_VAR_aws_profile: ""
   TF_VAR_database_url: ${{ secrets.DATABASE_URL }}
   TF_VAR_openai_api_key: ${{ secrets.OPENAI_API_KEY }}
+  TF_VAR_google_oauth_client_id: ${{ secrets.GOOGLE_OAUTH_CLIENT_ID }}
+  TF_VAR_google_oauth_client_secret: ${{ secrets.GOOGLE_OAUTH_CLIENT_SECRET }}
 
 defaults:
   run:

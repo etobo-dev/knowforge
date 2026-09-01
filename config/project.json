@@ -9,5 +9,8 @@
   },
   "storage": {
     "documents_bucket": "knowforge-documents-bucket"
+  },
+  "auth": {
+    "cognito_domain_prefix": "knowforge"
   }
 }
