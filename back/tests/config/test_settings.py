@@ -50,7 +50,10 @@ def test_load_settings_exposes_expected_defaults(
     assert settings.chat_image_detail == DEFAULT_CHAT_IMAGE_DETAIL
     assert settings.content_kind_image == DEFAULT_CONTENT_KIND_IMAGE
     assert settings.content_kind_text == DEFAULT_CONTENT_KIND_TEXT
-    assert settings.image_search_description_prompt == DEFAULT_IMAGE_SEARCH_DESCRIPTION_PROMPT
+    assert (
+        settings.image_search_description_prompt
+        == DEFAULT_IMAGE_SEARCH_DESCRIPTION_PROMPT
+    )
     assert settings.top_k == DEFAULT_TOP_K
     assert settings.chunk_size == DEFAULT_CHUNK_SIZE
     assert settings.chunk_overlap == DEFAULT_CHUNK_OVERLAP
