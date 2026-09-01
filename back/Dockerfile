@@ -22,6 +22,7 @@ COPY --from=builder /app/requirements.txt ${LAMBDA_TASK_ROOT}/
 RUN pip install --no-cache-dir -r ${LAMBDA_TASK_ROOT}/requirements.txt
 
 COPY api ${LAMBDA_TASK_ROOT}/api
+COPY config ${LAMBDA_TASK_ROOT}/config
 COPY db ${LAMBDA_TASK_ROOT}/db
 COPY rag ${LAMBDA_TASK_ROOT}/rag
 COPY utils.py ${LAMBDA_TASK_ROOT}/utils.py
