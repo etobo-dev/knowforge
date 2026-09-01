@@ -1,0 +1,7 @@
+aws_profile = "knowforge"
+
+database_url   = "postgresql://..."
+openai_api_key = "sk-..."
+
+google_oauth_client_id     = "....apps.googleusercontent.com"
+google_oauth_client_secret = "GOCSPX-..."
