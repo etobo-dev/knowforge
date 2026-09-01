@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, Response, UploadFile, sta
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 
+from api.auth import get_authenticated_identity
 from api.document_response import build_document_response
 from api.schemas.documents import DocumentResponse
 from db.session import get_db
@@ -17,7 +18,11 @@ from rag.upload import upload_document
 
 DEV_USER_ID = UUID("00000000-0000-0000-0000-000000000001")
 
-router = APIRouter(prefix="/documents", tags=["documents"])
+router = APIRouter(
+    prefix="/documents",
+    tags=["documents"],
+    dependencies=[Depends(get_authenticated_identity)],
+)
 
 
 @router.get("", response_model=list[DocumentResponse])

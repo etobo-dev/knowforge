@@ -3,6 +3,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Response, status
 from sqlalchemy.orm import Session
 
+from api.auth import get_authenticated_identity
 from api.schemas.chats import (
     ChatCreateRequest,
     ChatDetailResponse,
@@ -29,7 +30,11 @@ from db.session import get_db
 
 DEV_USER_ID = UUID("00000000-0000-0000-0000-000000000001")
 
-router = APIRouter(prefix="/chats", tags=["chats"])
+router = APIRouter(
+    prefix="/chats",
+    tags=["chats"],
+    dependencies=[Depends(get_authenticated_identity)],
+)
 
 
 def _messages_sorted(chat: Chat) -> list[MessageResponse]:

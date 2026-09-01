@@ -57,7 +57,9 @@ def _access_token(
         "sub": sub,
         "iss": settings.cognito_issuer_url,
         "token_use": token_use,
-        "client_id": client_id if client_id is not None else settings.cognito_app_client_id,
+        "client_id": client_id
+        if client_id is not None
+        else settings.cognito_app_client_id,
         "iat": now,
         "exp": now + timedelta(minutes=5),
     }
