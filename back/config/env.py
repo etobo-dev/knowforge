@@ -12,6 +12,12 @@ def get_env(*, key: str) -> str:
     return value
 
 
-def get_env_or(*, key: str, default: str) -> str:
+def get_bool_env(*, key: str) -> bool:
     value = os.getenv(key)
-    return value if value else default
+    if value is None or value == "":
+        raise ValueError(f"Environment variable {key} is not set")
+    if value == "true":
+        return True
+    if value == "false":
+        return False
+    raise ValueError(f"Environment variable {key} must be 'true' or 'false'")

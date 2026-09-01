@@ -16,8 +16,6 @@ from config.settings import (
     DEFAULT_IMAGE_SEARCH_DESCRIPTION_PROMPT,
     DEFAULT_IMAGE_VECTOR_TABLE_NAME,
     DEFAULT_MAX_FILE_SIZE,
-    DEFAULT_S3_BUCKET,
-    DEFAULT_S3_REGION,
     DEFAULT_SOFT_DELETE_RETENTION_DAYS,
     DEFAULT_TOP_K,
     DEFAULT_CHUNK_OVERLAP,
@@ -35,13 +33,13 @@ def test_load_settings_exposes_expected_defaults(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.setenv("OPENAI_API_KEY", "test-openai-key")
-    monkeypatch.delenv("S3_BUCKET", raising=False)
-    monkeypatch.delenv("S3_REGION", raising=False)
+    monkeypatch.setenv("S3_BUCKET", "knowforge-documents-bucket")
+    monkeypatch.setenv("S3_REGION", "us-east-1")
 
     settings = load_settings()
 
-    assert settings.s3_bucket == DEFAULT_S3_BUCKET
-    assert settings.s3_region == DEFAULT_S3_REGION
+    assert settings.s3_bucket == "knowforge-documents-bucket"
+    assert settings.s3_region == "us-east-1"
     assert settings.embedding_model == DEFAULT_EMBEDDING_MODEL
     assert settings.embedding_dimension == DEFAULT_EMBEDDING_DIMENSION
     assert settings.vector_table_name == DEFAULT_VECTOR_TABLE_NAME
@@ -70,7 +68,17 @@ def test_load_settings_reads_openai_api_key_from_env(
     assert settings.openai_api_key == "custom-key"
 
 
-def test_load_settings_reads_s3_overrides_from_env(
+def test_load_settings_requires_s3_bucket(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("OPENAI_API_KEY", "test-openai-key")
+    monkeypatch.delenv("S3_BUCKET", raising=False)
+
+    with pytest.raises(ValueError, match="S3_BUCKET"):
+        load_settings()
+
+
+def test_load_settings_reads_s3_from_env(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.setenv("OPENAI_API_KEY", "test-openai-key")
@@ -98,6 +106,48 @@ def test_load_settings_exposes_soft_delete_retention() -> None:
     settings = load_settings()
 
     assert settings.soft_delete_retention_days == DEFAULT_SOFT_DELETE_RETENTION_DAYS
+
+
+def test_load_settings_requires_auth_disabled(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("OPENAI_API_KEY", "test-openai-key")
+    monkeypatch.delenv("AUTH_DISABLED", raising=False)
+
+    with pytest.raises(ValueError, match="AUTH_DISABLED"):
+        load_settings()
+
+
+def test_load_settings_requires_cognito_user_pool_id(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("OPENAI_API_KEY", "test-openai-key")
+    monkeypatch.setenv("AUTH_DISABLED", "true")
+    monkeypatch.delenv("COGNITO_USER_POOL_ID", raising=False)
+
+    with pytest.raises(ValueError, match="COGNITO_USER_POOL_ID"):
+        load_settings()
+
+
+def test_load_settings_reads_cognito_and_auth_disabled(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("OPENAI_API_KEY", "test-openai-key")
+    monkeypatch.setenv("AUTH_DISABLED", "false")
+    monkeypatch.setenv("COGNITO_USER_POOL_ID", "us-east-1_Example")
+    monkeypatch.setenv("COGNITO_APP_CLIENT_ID", "exampleclientid")
+    monkeypatch.setenv("COGNITO_REGION", "us-east-1")
+
+    settings = load_settings()
+
+    assert settings.auth_disabled is False
+    assert settings.cognito_user_pool_id == "us-east-1_Example"
+    assert settings.cognito_app_client_id == "exampleclientid"
+    assert settings.cognito_region == "us-east-1"
+    assert (
+        settings.cognito_issuer_url
+        == "https://cognito-idp.us-east-1.amazonaws.com/us-east-1_Example"
+    )
 
 
 def test_load_settings_requires_openai_api_key(
