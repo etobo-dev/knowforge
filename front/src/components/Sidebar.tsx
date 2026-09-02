@@ -5,6 +5,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { useCallback, useEffect, useState } from 'react'
 import { Plus, Settings, MessageSquare, FolderOpen, Upload, Trash2 } from 'lucide-react'
 
+import { AuthControls } from '@/components/AuthControls'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import { ConfirmModal } from '@/components/ui/Modal'
 import {
@@ -219,6 +220,7 @@ export default function Sidebar() {
       </nav>
 
       <div className="space-y-1 border-t border-white/10 p-4">
+        <AuthControls />
         <ThemeToggle />
         <Link
           href="/settings"
