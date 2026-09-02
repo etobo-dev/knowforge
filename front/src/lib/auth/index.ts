@@ -16,3 +16,4 @@ export {
   saveAuthSession,
   type CognitoTokenResponse,
 } from "@/lib/auth/session";
+export { exchangeAuthorizationCode } from "@/lib/auth/token";
