@@ -43,6 +43,11 @@ import {
   setCachedChat,
   setCachedChatList,
 } from '@/lib/chatCache'
+import {
+  clearAuthSession,
+  getAccessToken,
+  startGoogleLogin,
+} from '@/lib/auth'
 
 export { getCachedChat, getCachedChatList } from '@/lib/chatCache'
 
@@ -79,8 +84,32 @@ async function parseJsonError(response: Response): Promise<string | null> {
   return null
 }
 
+async function apiFetch(
+  input: string,
+  init: RequestInit = {},
+): Promise<Response> {
+  const headers = new Headers(init.headers)
+  const accessToken = getAccessToken()
+  if (accessToken) {
+    headers.set('Authorization', `Bearer ${accessToken}`)
+  }
+
+  const response = await fetch(input, {
+    ...init,
+    headers,
+  })
+
+  if (response.status === 401) {
+    clearAuthSession()
+    startGoogleLogin()
+    throw new Error('Unauthorized')
+  }
+
+  return response
+}
+
 export async function listDocuments(): Promise<DocumentResponse[]> {
-  const response = await fetch(`${API_BASE}/api/documents`, {
+  const response = await apiFetch(`${API_BASE}/api/documents`, {
     cache: 'no-store',
   })
   if (!response.ok) {
@@ -91,7 +120,7 @@ export async function listDocuments(): Promise<DocumentResponse[]> {
 }
 
 export async function deleteDocument(id: string): Promise<void> {
-  const response = await fetch(
+  const response = await apiFetch(
     `${API_BASE}/api/documents/${encodeURIComponent(id)}`,
     { method: 'DELETE' },
   )
@@ -109,7 +138,7 @@ export async function uploadDocument(
   const formData = new FormData()
   formData.append('file', file)
 
-  const response = await fetch(`${API_BASE}/api/documents/upload`, {
+  const response = await apiFetch(`${API_BASE}/api/documents/upload`, {
     method: 'POST',
     body: formData,
   })
@@ -135,7 +164,9 @@ export async function listChats(options?: {
     if (cached) return cached
   }
 
-  const response = await fetch(`${API_BASE}/api/chats`, { cache: 'no-store' })
+  const response = await apiFetch(`${API_BASE}/api/chats`, {
+    cache: 'no-store',
+  })
   if (!response.ok) {
     const detail = await parseJsonError(response)
     throw new Error(detail ?? `Failed to list chats (${response.status})`)
@@ -154,7 +185,7 @@ export async function getChat(
     if (cached) return cached
   }
 
-  const response = await fetch(
+  const response = await apiFetch(
     `${API_BASE}/api/chats/${encodeURIComponent(chatId)}`,
     { cache: 'no-store' },
   )
@@ -169,7 +200,7 @@ export async function getChat(
 }
 
 export async function deleteChat(id: string): Promise<void> {
-  const response = await fetch(
+  const response = await apiFetch(
     `${API_BASE}/api/chats/${encodeURIComponent(id)}`,
     { method: 'DELETE', cache: 'no-store' },
   )
@@ -186,7 +217,7 @@ export async function deleteChat(id: string): Promise<void> {
 }
 
 export async function createChat(title: string): Promise<ChatDetailResponse> {
-  const response = await fetch(`${API_BASE}/api/chats`, {
+  const response = await apiFetch(`${API_BASE}/api/chats`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ title }),
@@ -206,7 +237,7 @@ export async function appendChatMessage(
   chatId: string,
   content: string,
 ): Promise<ChatDetailResponse> {
-  const response = await fetch(
+  const response = await apiFetch(
     `${API_BASE}/api/chats/${encodeURIComponent(chatId)}/messages`,
     {
       method: 'POST',
@@ -264,7 +295,7 @@ export async function deleteChatMessage(
   chatId: string,
   messageId: string,
 ): Promise<void> {
-  const response = await fetch(
+  const response = await apiFetch(
     `${API_BASE}/api/chats/${encodeURIComponent(chatId)}/messages/${encodeURIComponent(messageId)}`,
     { method: 'DELETE', cache: 'no-store' },
   )
@@ -291,7 +322,7 @@ export async function updateChatMessage(
   messageId: string,
   content: string,
 ): Promise<ChatDetailResponse> {
-  const response = await fetch(
+  const response = await apiFetch(
     `${API_BASE}/api/chats/${encodeURIComponent(chatId)}/messages/${encodeURIComponent(messageId)}`,
     {
       method: 'PATCH',
