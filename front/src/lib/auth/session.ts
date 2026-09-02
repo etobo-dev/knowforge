@@ -1,4 +1,5 @@
 export const AUTH_SESSION_STORAGE_KEY = "knowforge-auth-session";
+export const AUTH_CHANGED_EVENT = "knowforge:auth-changed";
 
 export type CognitoTokenResponse = {
   access_token: string;
@@ -12,6 +13,11 @@ type StoredAuthSession = {
   refreshToken: string | null;
   expiresAt: number;
 };
+
+function notifyAuthChanged(): void {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new Event(AUTH_CHANGED_EVENT));
+}
 
 function readStoredSession(): StoredAuthSession | null {
   if (typeof window === "undefined") return null;
@@ -53,6 +59,7 @@ export function saveAuthSession(tokens: CognitoTokenResponse): void {
     refreshToken: tokens.refresh_token ?? null,
     expiresAt: Date.now() + tokens.expires_in * 1000,
   });
+  notifyAuthChanged();
 }
 
 export function getAuthSession(): StoredAuthSession | null {
@@ -80,4 +87,14 @@ export function isAuthenticated(): boolean {
 export function clearAuthSession(): void {
   if (typeof window === "undefined") return;
   sessionStorage.removeItem(AUTH_SESSION_STORAGE_KEY);
+  notifyAuthChanged();
+}
+
+export function subscribeAuthChanged(onStoreChange: () => void): () => void {
+  if (typeof window === "undefined") {
+    return () => undefined;
+  }
+
+  window.addEventListener(AUTH_CHANGED_EVENT, onStoreChange);
+  return () => window.removeEventListener(AUTH_CHANGED_EVENT, onStoreChange);
 }
