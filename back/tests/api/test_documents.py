@@ -4,7 +4,7 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
-from api.routes.documents import DEV_USER_ID
+from api.auth import AUTH_DISABLED_USER_ID
 from db.factories.documents import build_document
 from db.models import DocumentStatus
 from db.repositories.documents import db_persist_new_document
@@ -171,7 +171,7 @@ def test_download_returns_503_when_presign_fails(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     document = build_document(
-        user_id=DEV_USER_ID,
+        user_id=AUTH_DISABLED_USER_ID,
         filename="broken.txt",
         mime_type="text/plain",
         size_bytes=4,
@@ -219,7 +219,7 @@ def test_delete_ignores_s3_errors(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     document = build_document(
-        user_id=DEV_USER_ID,
+        user_id=AUTH_DISABLED_USER_ID,
         filename="delete.txt",
         mime_type="text/plain",
         size_bytes=4,
