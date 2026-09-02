@@ -3,7 +3,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Response, status
 from sqlalchemy.orm import Session
 
-from api.auth import get_authenticated_identity
+from api.auth import get_current_app_user
 from api.schemas.chats import (
     ChatCreateRequest,
     ChatDetailResponse,
@@ -13,7 +13,7 @@ from api.schemas.chats import (
     MessageResponse,
     MessageUpdateRequest,
 )
-from db.models import Chat
+from db.models import Chat, User
 from db.repositories.chats import (
     db_create_chat,
     db_delete_chat,
@@ -28,12 +28,10 @@ from db.services.chat_messages import (
 )
 from db.session import get_db
 
-DEV_USER_ID = UUID("00000000-0000-0000-0000-000000000001")
-
 router = APIRouter(
     prefix="/chats",
     tags=["chats"],
-    dependencies=[Depends(get_authenticated_identity)],
+    dependencies=[Depends(get_current_app_user)],
 )
 
 
@@ -56,20 +54,28 @@ def _chat_detail(chat: Chat) -> ChatDetailResponse:
 def create_chat(
     body: ChatCreateRequest,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_app_user),
 ) -> ChatDetailResponse:
-    chat = db_create_chat(db, DEV_USER_ID, title=body.title)
+    chat = db_create_chat(db, current_user.id, title=body.title)
     return _chat_detail(chat)
 
 
 @router.get("", response_model=list[ChatSummaryResponse])
-def list_chats(db: Session = Depends(get_db)) -> list[ChatSummaryResponse]:
-    chats = db_list_chats_for_user(db, DEV_USER_ID)
+def list_chats(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_app_user),
+) -> list[ChatSummaryResponse]:
+    chats = db_list_chats_for_user(db, current_user.id)
     return [ChatSummaryResponse.model_validate(c) for c in chats]
 
 
 @router.get("/{chat_id}", response_model=ChatDetailResponse)
-def get_chat(chat_id: UUID, db: Session = Depends(get_db)) -> ChatDetailResponse:
-    chat = db_get_chat_for_user(db, DEV_USER_ID, chat_id)
+def get_chat(
+    chat_id: UUID,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_app_user),
+) -> ChatDetailResponse:
+    chat = db_get_chat_for_user(db, current_user.id, chat_id)
     return _chat_detail(chat)
 
 
@@ -78,15 +84,20 @@ def update_chat(
     chat_id: UUID,
     body: ChatUpdateRequest,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_app_user),
 ) -> ChatDetailResponse:
-    chat = db_get_chat_for_user(db, DEV_USER_ID, chat_id)
+    chat = db_get_chat_for_user(db, current_user.id, chat_id)
     chat = db_update_chat_title(db, chat, body.title.strip())
     return _chat_detail(chat)
 
 
 @router.delete("/{chat_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_chat(chat_id: UUID, db: Session = Depends(get_db)) -> Response:
-    chat = db_get_chat_for_user(db, DEV_USER_ID, chat_id)
+def delete_chat(
+    chat_id: UUID,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_app_user),
+) -> Response:
+    chat = db_get_chat_for_user(db, current_user.id, chat_id)
     db_delete_chat(db, chat)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
@@ -96,6 +107,7 @@ def append_message(
     chat_id: UUID,
     body: MessageCreateRequest,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_app_user),
 ) -> ChatDetailResponse:
     user_message = body.content.strip()
     if not user_message:
@@ -103,7 +115,7 @@ def append_message(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Empty message"
         )
 
-    chat = process_incoming_message(db, DEV_USER_ID, chat_id, user_message)
+    chat = process_incoming_message(db, current_user.id, chat_id, user_message)
     return _chat_detail(chat)
 
 
@@ -111,9 +123,12 @@ def append_message(
     "/{chat_id}/messages/{message_id}", status_code=status.HTTP_204_NO_CONTENT
 )
 def delete_message(
-    chat_id: UUID, message_id: UUID, db: Session = Depends(get_db)
+    chat_id: UUID,
+    message_id: UUID,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_app_user),
 ) -> None:
-    process_message_deletion(db, DEV_USER_ID, chat_id, message_id)
+    process_message_deletion(db, current_user.id, chat_id, message_id)
 
 
 @router.patch("/{chat_id}/messages/{message_id}", response_model=ChatDetailResponse)
@@ -122,7 +137,8 @@ def update_message(
     message_id: UUID,
     body: MessageUpdateRequest,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_app_user),
 ) -> ChatDetailResponse:
-    chat = process_message_update(db, DEV_USER_ID, chat_id, message_id, body)
+    chat = process_message_update(db, current_user.id, chat_id, message_id, body)
 
     return _chat_detail(chat)

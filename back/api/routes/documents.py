@@ -4,9 +4,10 @@ from fastapi import APIRouter, Depends, HTTPException, Response, UploadFile, sta
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 
-from api.auth import get_authenticated_identity
+from api.auth import get_current_app_user
 from api.document_response import build_document_response
 from api.schemas.documents import DocumentResponse
+from db.models import User
 from db.session import get_db
 from db.repositories.documents import (
     db_delete_document,
@@ -16,26 +17,29 @@ from db.repositories.documents import (
 from rag.s3 import delete_object_from_s3, presigned_download_url
 from rag.upload import upload_document
 
-DEV_USER_ID = UUID("00000000-0000-0000-0000-000000000001")
-
 router = APIRouter(
     prefix="/documents",
     tags=["documents"],
-    dependencies=[Depends(get_authenticated_identity)],
+    dependencies=[Depends(get_current_app_user)],
 )
 
 
 @router.get("", response_model=list[DocumentResponse])
-def list_documents(db: Session = Depends(get_db)) -> list[DocumentResponse]:
-    documents = db_list_documents_for_user(db, DEV_USER_ID)
+def list_documents(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_app_user),
+) -> list[DocumentResponse]:
+    documents = db_list_documents_for_user(db, current_user.id)
     return [build_document_response(document) for document in documents]
 
 
 @router.get("/{document_id}/download")
 def download_document(
-    document_id: UUID, db: Session = Depends(get_db)
+    document_id: UUID,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_app_user),
 ) -> RedirectResponse:
-    document = db_get_document_for_user(db, DEV_USER_ID, document_id)
+    document = db_get_document_for_user(db, current_user.id, document_id)
     if document is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
     try:
@@ -49,16 +53,24 @@ def download_document(
 
 
 @router.get("/{document_id}", response_model=DocumentResponse)
-def get_document(document_id: UUID, db: Session = Depends(get_db)) -> DocumentResponse:
-    document = db_get_document_for_user(db, DEV_USER_ID, document_id)
+def get_document(
+    document_id: UUID,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_app_user),
+) -> DocumentResponse:
+    document = db_get_document_for_user(db, current_user.id, document_id)
     if document is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
     return build_document_response(document)
 
 
 @router.delete("/{document_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_document(document_id: UUID, db: Session = Depends(get_db)) -> Response:
-    document = db_get_document_for_user(db, DEV_USER_ID, document_id)
+def delete_document(
+    document_id: UUID,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_app_user),
+) -> Response:
+    document = db_get_document_for_user(db, current_user.id, document_id)
     if document is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
     s3_key = document.s3_key
@@ -75,9 +87,10 @@ async def upload_file(
     file: UploadFile,
     response: Response,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_app_user),
 ) -> DocumentResponse:
     try:
-        document, created = await upload_document(file, DEV_USER_ID, db)
+        document, created = await upload_document(file, current_user.id, db)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
