@@ -46,7 +46,7 @@ def db_get_or_create_user_with_id(
     cognito_sub: str,
     email: str | None = None,
 ) -> User:
-    """Get-or-create a user with a fixed primary key (e.g. AUTH_DISABLED local user)."""
+    """Get-or-create a user with a fixed primary key (e.g. data backfill)."""
     normalized_sub = cognito_sub.strip()
     if not normalized_sub:
         raise ValueError("cognito_sub must not be empty")

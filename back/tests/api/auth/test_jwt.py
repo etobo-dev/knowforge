@@ -35,7 +35,6 @@ def _settings(*, client_id: str = "test-client") -> Settings:
         chunk_overlap=200,
         allowed_mime_types=frozenset({"application/pdf"}),
         max_file_size=1024,
-        auth_disabled=False,
         cognito_user_pool_id="us-east-1_TestPool",
         cognito_app_client_id=client_id,
         cognito_region="us-east-1",

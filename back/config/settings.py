@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 
-from config.env import get_bool_env, get_env
+from config.env import get_env
 
 DEFAULT_EMBEDDING_MODEL = "text-embedding-3-small"
 DEFAULT_EMBEDDING_DIMENSION = 1536
@@ -77,7 +77,6 @@ class Settings:
     chunk_overlap: int
     allowed_mime_types: frozenset[str]
     max_file_size: int
-    auth_disabled: bool
     cognito_user_pool_id: str
     cognito_app_client_id: str
     cognito_region: str
@@ -113,7 +112,6 @@ def load_settings() -> Settings:
         chunk_overlap=DEFAULT_CHUNK_OVERLAP,
         allowed_mime_types=DEFAULT_ALLOWED_MIME_TYPES,
         max_file_size=DEFAULT_MAX_FILE_SIZE,
-        auth_disabled=get_bool_env(key="AUTH_DISABLED"),
         cognito_user_pool_id=get_env(key="COGNITO_USER_POOL_ID"),
         cognito_app_client_id=get_env(key="COGNITO_APP_CLIENT_ID"),
         cognito_region=get_env(key="COGNITO_REGION"),

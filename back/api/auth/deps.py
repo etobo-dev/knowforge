@@ -9,8 +9,6 @@ from config import Settings, get_settings
 
 _bearer_scheme = HTTPBearer(auto_error=False)
 
-AUTH_DISABLED_SUB = "auth-disabled"
-
 
 def get_authenticated_identity(
     credentials: Annotated[
@@ -19,9 +17,6 @@ def get_authenticated_identity(
     ],
     settings: Annotated[Settings, Depends(get_settings)],
 ) -> AuthenticatedIdentity:
-    if settings.auth_disabled:
-        return AuthenticatedIdentity(cognito_sub=AUTH_DISABLED_SUB, email=None)
-
     if credentials is None or credentials.scheme.lower() != "bearer":
         raise HTTPException(status_code=401, detail="Missing bearer token")
 

@@ -88,39 +88,26 @@ def test_load_settings_exposes_soft_delete_retention() -> None:
     assert settings.soft_delete_retention_days == DEFAULT_SOFT_DELETE_RETENTION_DAYS
 
 
-def test_load_settings_requires_auth_disabled(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    monkeypatch.setenv("OPENAI_API_KEY", "test-openai-key")
-    monkeypatch.delenv("AUTH_DISABLED", raising=False)
-
-    with pytest.raises(ValueError, match="AUTH_DISABLED"):
-        load_settings()
-
-
 def test_load_settings_requires_cognito_user_pool_id(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.setenv("OPENAI_API_KEY", "test-openai-key")
-    monkeypatch.setenv("AUTH_DISABLED", "true")
     monkeypatch.delenv("COGNITO_USER_POOL_ID", raising=False)
 
     with pytest.raises(ValueError, match="COGNITO_USER_POOL_ID"):
         load_settings()
 
 
-def test_load_settings_reads_cognito_and_auth_disabled(
+def test_load_settings_reads_cognito_settings(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.setenv("OPENAI_API_KEY", "test-openai-key")
-    monkeypatch.setenv("AUTH_DISABLED", "false")
     monkeypatch.setenv("COGNITO_USER_POOL_ID", "us-east-1_Example")
     monkeypatch.setenv("COGNITO_APP_CLIENT_ID", "exampleclientid")
     monkeypatch.setenv("COGNITO_REGION", "us-east-1")
 
     settings = load_settings()
 
-    assert settings.auth_disabled is False
     assert settings.cognito_user_pool_id == "us-east-1_Example"
     assert settings.cognito_app_client_id == "exampleclientid"
     assert settings.cognito_region == "us-east-1"
