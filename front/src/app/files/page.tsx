@@ -41,7 +41,9 @@ export default function FilesPage() {
   }, [])
 
   useEffect(() => {
-    load()
+    queueMicrotask(() => {
+      load()
+    })
   }, [load])
 
   const filtered = useMemo(() => {

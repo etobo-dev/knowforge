@@ -60,7 +60,10 @@ export function useDocumentUpload() {
   const [uploadNotice, setUploadNotice] = useState<string | null>(null)
 
   const uploadsRef = useRef(uploads)
-  uploadsRef.current = uploads
+
+  useEffect(() => {
+    uploadsRef.current = uploads
+  }, [uploads])
 
   useEffect(() => {
     if (!uploadNotice) return

@@ -64,7 +64,9 @@ export default function Sidebar() {
   }, [])
 
   useEffect(() => {
-    void loadChats()
+    queueMicrotask(() => {
+      void loadChats()
+    })
     const onChatsUpdated = () => {
       void loadChats(true)
     }

@@ -218,34 +218,40 @@ export function ChatView({ initialChatId }: Props) {
   useEffect(() => {
     if (!initialChatId) return
 
-    const cached = getCachedChat(initialChatId)
-    if (cached) {
-      applyChat(cached)
-      setIsLoading(false)
-      setError(null)
-      return
-    }
-
     let cancelled = false
-    setIsLoading(true)
-    setError(null)
-    void getChat(initialChatId)
-      .then((chat) => {
-        if (cancelled) return
-        if (!chat) {
-          setError('Chat not found.')
-          return
-        }
-        applyChat(chat)
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setError('Could not load this chat. Check that the API is running.')
-        }
-      })
-      .finally(() => {
-        if (!cancelled) setIsLoading(false)
-      })
+
+    queueMicrotask(() => {
+      if (cancelled) return
+
+      const cached = getCachedChat(initialChatId)
+      if (cached) {
+        applyChat(cached)
+        setIsLoading(false)
+        setError(null)
+        return
+      }
+
+      setIsLoading(true)
+      setError(null)
+      void getChat(initialChatId)
+        .then((chat) => {
+          if (cancelled) return
+          if (!chat) {
+            setError('Chat not found.')
+            return
+          }
+          applyChat(chat)
+        })
+        .catch(() => {
+          if (!cancelled) {
+            setError('Could not load this chat. Check that the API is running.')
+          }
+        })
+        .finally(() => {
+          if (!cancelled) setIsLoading(false)
+        })
+    })
+
     return () => {
       cancelled = true
     }
