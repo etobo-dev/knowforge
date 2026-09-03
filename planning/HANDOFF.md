@@ -29,8 +29,9 @@ Optional: `front/AGENTS.md` for Next.js-specific notes.
 |------|--------|
 | Product design | Documented and self-reviewed (**ROADMAP rev 3**) |
 | Milestone backlog | Draft in `MILESTONES.md` (north star, **not** all opened on GitHub) |
-| Implementation of Phase 0+ | **Not started** as of this handoff |
-| **Next work** | **M0.1 — Central configuration** (`[Cross] Add central config module` then `[Cross] Point existing code at central config`) |
+| **M0.1** — Central configuration | **Done** |
+| **M0.2** — Google login (Cognito) | **In progress** — #70–#73 closed; **#74** open (staging deploy + smoke) |
+| **Next work** | Finish **#74**, then **M0.3** orgs/workspaces |
 | External beta | End of **Phase 1** / milestone **M1.10** |
 
 ---
