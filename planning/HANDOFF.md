@@ -30,8 +30,8 @@ Optional: `front/AGENTS.md` for Next.js-specific notes.
 | Product design | Documented and self-reviewed (**ROADMAP rev 3**) |
 | Milestone backlog | Draft in `MILESTONES.md` (north star, **not** all opened on GitHub) |
 | **M0.1** — Central configuration | **Done** |
-| **M0.2** — Google login (Cognito) | **In progress** — #70–#73 closed; **#74** open (staging deploy + smoke) |
-| **Next work** | Finish **#74**, then **M0.3** orgs/workspaces |
+| **M0.2** — Google login (Cognito) | **Done** — deployed users must sign in with Google |
+| **Next work** | **M0.3** — Organizations & workspaces |
 | External beta | End of **Phase 1** / milestone **M1.10** |
 
 ---
@@ -107,7 +107,7 @@ Shared chats (Phase 2): viewers still need workspace KB access (public via org m
 - **Backend:** FastAPI, Mangum/Lambda, SQLAlchemy, Alembic, Postgres + pgvector, S3, **LlamaIndex**-centric RAG (to be retired), OpenAI embeddings/chat.
 - **Frontend:** Next.js App Router, React, Tailwind.
 - **Infra:** Terraform, API Gateway, ECR, S3 documents bucket.
-- **Auth today:** hard-coded `DEV_USER_ID` — replace in M0.2.
+- **Auth today:** Cognito JWT on every API request; `users` maps `sub` → `user_id`. Local and production require Google login. Deploy: `infra/README.md`. Pre-auth rows under `00000000-0000-0000-0000-000000000001` stay isolated; backfill is **M0.3.4**.
 - **Upload today:** indexing often **synchronous** in the HTTP request — replace with async JobRunner + ingest graph in Phase 1.
 - **Images/multimodal:** already supported — **keep in scope** through Phase 1.
 

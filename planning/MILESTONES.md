@@ -59,9 +59,9 @@ Users sign in with Google; hard-coded dev user goes away.
 | M0.2.2 | API | Verify Cognito JWT on requests | Backend rejects unauthenticated API calls. |
 | M0.2.3 | Front | Add Google login and logout | UI can sign in with Google and sign out. |
 | M0.2.4 | API | Map Cognito user to app user | Persist `sub`/email; replace `DEV_USER_ID` everywhere. |
-| M0.2.5 | Cross | Require auth on staging | Staging requires login; existing flows still work for signed-in users. |
+| M0.2.5 | Cross | Require auth on production | Deployed app requires login; flows work for signed-in users. |
 
-**Done when:** production/staging users must log in with Google to use the app.
+**Done when:** deployed users must log in with Google to use the app.
 
 ---
 
