@@ -12,10 +12,9 @@ cd back
 uv run uvicorn api.main:app --reload
 ```
 
-3. `back/.env` has auth enabled and matches your Cognito pool:
+3. `back/.env` matches your Cognito pool:
 
 ```bash
-AUTH_DISABLED=false
 COGNITO_REGION=us-east-1
 COGNITO_USER_POOL_ID=<cognito_user_pool_id>
 COGNITO_APP_CLIENT_ID=<cognito_app_client_id>
@@ -81,4 +80,6 @@ You can also set **Bearer Token** in Postman or Insomnia.
 
 - The access token is sent per request in the `Authorization` header. It is not stored in `.env`.
 - Tokens expire after 60 minutes (Cognito app client setting).
-- For local development without Cognito, set `AUTH_DISABLED=true` in `.env`.
+- Local and production both require a valid Cognito token (no bypass).
+
+Production smoke: `curl` without a token against the deployed API → `401`; then sign in at `https://knowforge.etobo.tech`, upload a file, send one chat. Deploy steps: `infra/README.md`.
