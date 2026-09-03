@@ -5,6 +5,8 @@
 /.pnp
 .pnp.*
 .pnpm-store
+pnpm-lock.yaml
+pnpm-workspace.yaml
 .yarn/*
 !.yarn/patches
 !.yarn/plugins
