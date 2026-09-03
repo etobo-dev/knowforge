@@ -35,8 +35,10 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const theme: Theme = preference === 'system' ? systemTheme : preference
 
   useEffect(() => {
-    setPreferenceState(getStoredPreference() ?? 'system')
-    setSystemTheme(getSystemTheme())
+    queueMicrotask(() => {
+      setPreferenceState(getStoredPreference() ?? 'system')
+      setSystemTheme(getSystemTheme())
+    })
   }, [])
 
   useEffect(() => {
