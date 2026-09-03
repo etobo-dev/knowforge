@@ -17,7 +17,6 @@ os.environ["AWS_ACCESS_KEY_ID"] = "testing"
 os.environ["AWS_SECRET_ACCESS_KEY"] = "testing"
 os.environ["AWS_DEFAULT_REGION"] = "us-east-1"
 os.environ["OPENAI_API_KEY"] = "test-openai-key"
-os.environ["AUTH_DISABLED"] = "true"
 os.environ["COGNITO_USER_POOL_ID"] = "us-east-1_TestPool"
 os.environ["COGNITO_APP_CLIENT_ID"] = "testclientid"
 os.environ["COGNITO_REGION"] = "us-east-1"
@@ -58,7 +57,6 @@ def db_session(engine: Any) -> Generator[Session, None, None]:
 def reset_auth_settings(monkeypatch: pytest.MonkeyPatch) -> Generator[None, None, None]:
     import config as config_package
 
-    monkeypatch.setenv("AUTH_DISABLED", "true")
     monkeypatch.setenv("COGNITO_USER_POOL_ID", "us-east-1_TestPool")
     monkeypatch.setenv("COGNITO_APP_CLIENT_ID", "testclientid")
     monkeypatch.setenv("COGNITO_REGION", "us-east-1")
@@ -131,13 +129,26 @@ def s3_mock() -> Generator[None, None, None]:
 
 @pytest.fixture
 def client(db_session: Session) -> Generator[TestClient, None, None]:
+    from api.auth import get_current_app_user
     from api.main import app
+    from db.models import User
     from db.session import get_db
+    from tests.helpers.constants import DEV_USER_ID
+
+    test_user = User(
+        id=DEV_USER_ID,
+        cognito_sub="test-cognito-sub",
+        email="test@example.com",
+    )
+    db_session.add(test_user)
+    db_session.commit()
+    db_session.refresh(test_user)
 
     def override_get_db() -> Generator[Session, None, None]:
         yield db_session
 
     app.dependency_overrides[get_db] = override_get_db
+    app.dependency_overrides[get_current_app_user] = lambda: test_user
     with TestClient(app) as test_client:
         yield test_client
     app.dependency_overrides.clear()

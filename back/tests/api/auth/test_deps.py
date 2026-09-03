@@ -2,12 +2,12 @@ import pytest
 from fastapi import HTTPException
 from fastapi.security import HTTPAuthorizationCredentials
 
-from api.auth.deps import AUTH_DISABLED_SUB, get_authenticated_identity
+from api.auth.deps import get_authenticated_identity
 from api.auth.identity import AuthenticatedIdentity
 from config.settings import DailyQuotaLimits, Settings
 
 
-def _settings(*, auth_disabled: bool) -> Settings:
+def _settings() -> Settings:
     return Settings(
         s3_bucket="bucket",
         s3_region="us-east-1",
@@ -28,7 +28,6 @@ def _settings(*, auth_disabled: bool) -> Settings:
         chunk_overlap=200,
         allowed_mime_types=frozenset({"application/pdf"}),
         max_file_size=1024,
-        auth_disabled=auth_disabled,
         cognito_user_pool_id="us-east-1_TestPool",
         cognito_app_client_id="test-client",
         cognito_region="us-east-1",
@@ -36,21 +35,11 @@ def _settings(*, auth_disabled: bool) -> Settings:
     )
 
 
-def test_get_authenticated_identity_bypasses_when_auth_disabled() -> None:
-    identity = get_authenticated_identity(
-        credentials=None,
-        settings=_settings(auth_disabled=True),
-    )
-
-    assert identity.cognito_sub == AUTH_DISABLED_SUB
-    assert identity.email is None
-
-
-def test_get_authenticated_identity_requires_bearer_when_auth_enabled() -> None:
+def test_get_authenticated_identity_requires_bearer() -> None:
     with pytest.raises(HTTPException) as exc_info:
         get_authenticated_identity(
             credentials=None,
-            settings=_settings(auth_disabled=False),
+            settings=_settings(),
         )
 
     assert exc_info.value.status_code == 401
@@ -72,7 +61,7 @@ def test_get_authenticated_identity_verifies_bearer_token(
             scheme="Bearer",
             credentials="token",
         ),
-        settings=_settings(auth_disabled=False),
+        settings=_settings(),
     )
 
     assert identity.cognito_sub == "sub-from-token"
